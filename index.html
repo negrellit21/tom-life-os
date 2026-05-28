@@ -1,0 +1,2618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tom's Life OS</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --surface2: #f4f4f2;
+    --border: rgba(0,0,0,0.1);
+    --border2: rgba(0,0,0,0.06);
+    --text: #1a1a1a;
+    --text2: #555;
+    --text3: #999;
+    --green: #639922; --green-bg: #EAF3DE; --green-dark: #27500A;
+    --red: #E24B4A; --red-bg: #FCEBEB; --red-dark: #791F1F;
+    --amber: #BA7517; --amber-bg: #FAEEDA; --amber-dark: #633806;
+    --purple: #7F77DD; --purple-bg: #EEEDFE; --purple-dark: #3C3489;
+    --blue: #378ADD; --blue-bg: #E6F1FB; --blue-dark: #0C447C;
+    --teal: #1D9E75; --teal-bg: #E1F5EE; --teal-dark: #04342C;
+    --radius: 10px; --radius-sm: 6px;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+  /* NAV */
+  .nav { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .nav-inner { max-width: 900px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 0; }
+  .nav-brand { font-size: 15px; font-weight: 600; color: var(--text); padding: 16px 20px 16px 0; border-right: 1px solid var(--border2); margin-right: 8px; white-space: nowrap; }
+  .nav-brand span { color: var(--text3); font-weight: 400; }
+  .tab { padding: 18px 16px; font-size: 13px; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; transition: color 0.15s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+  /* LAYOUT */
+  .page { display: none; max-width: 900px; margin: 0 auto; padding: 28px 20px 60px; }
+  .page.active { display: block; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media (max-width: 640px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+  /* CARDS */
+  .card { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 14px; }
+  .card-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); margin-bottom: 14px; }
+  /* KPI ROW */
+  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .kpi { background: var(--surface2); border-radius: var(--radius-sm); padding: 14px; text-align: center; }
+  .kpi-val { font-size: 24px; font-weight: 600; line-height: 1; }
+  .kpi-label { font-size: 11px; color: var(--text3); margin-top: 4px; }
+  /* TAGS */
+  .tag { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 100px; }
+  .tag-red { background: var(--red-bg); color: var(--red-dark); }
+  .tag-green { background: var(--green-bg); color: var(--green-dark); }
+  .tag-amber { background: var(--amber-bg); color: var(--amber-dark); }
+  .tag-purple { background: var(--purple-bg); color: var(--purple-dark); }
+  .tag-blue { background: var(--blue-bg); color: var(--blue-dark); }
+  .tag-teal { background: var(--teal-bg); color: var(--teal-dark); }
+  /* HABITS */
+  .habit-group-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); padding: 12px 0 6px; border-top: 1px solid var(--border2); margin-top: 4px; }
+  .habit-group-label:first-child { border-top: none; padding-top: 0; }
+  .habit-row { display: flex; align-items: flex-start; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border2); cursor: pointer; user-select: none; }
+  .habit-row:last-child { border-bottom: none; }
+  .habit-row:hover { opacity: 0.8; }
+  .hcheck { width: 19px; height: 19px; border-radius: 5px; border: 1.5px solid #ccc; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; background: white; }
+  .hcheck.done { background: var(--green); border-color: var(--green); }
+  .hcheck.done::after { content: ''; display: block; width: 5px; height: 9px; border: 2px solid white; border-left: none; border-top: none; transform: rotate(45deg) translate(-1px, -1px); }
+  .habit-content { flex: 1; }
+  .habit-name { font-size: 13px; color: var(--text); }
+  .habit-name.done { text-decoration: line-through; color: var(--text3); }
+  .habit-why { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  /* PROGRESS */
+  .progress-wrap { margin: 12px 0; }
+  .progress-meta { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
+  .progress-track { height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  /* SCHEDULE */
+  .sched-row { display: flex; gap: 0; margin-bottom: 3px; }
+  .sched-time { font-size: 11px; color: var(--text3); min-width: 62px; padding-top: 6px; flex-shrink: 0; }
+  .sched-block { flex: 1; border-radius: 5px; padding: 6px 10px; font-size: 12px; line-height: 1.4; }
+  .sb-wake { background: #FFF8EC; }
+  .sb-work { background: var(--blue-bg); }
+  .sb-pf { background: var(--purple-bg); }
+  .sb-gym { background: var(--teal-bg); }
+  .sb-food { background: #FFF3F0; }
+  .sb-wind { background: var(--surface2); }
+  .sb-sleep { background: #F0F0F8; }
+  .sb-reward { background: linear-gradient(135deg, #FFFBE6 0%, #FEF3C7 60%, #FDE68A 100%); border: 1.5px solid #F59E0B; }
+  @keyframes medalSpin { 0% { transform: rotateY(0deg) scale(1); } 50% { transform: rotateY(180deg) scale(1.2); } 100% { transform: rotateY(360deg) scale(1); } }
+  @keyframes medalGlow { 0%,100% { text-shadow: 0 0 6px #F59E0B, 0 0 12px #FBBF24; } 50% { text-shadow: 0 0 14px #F59E0B, 0 0 28px #FBBF24, 0 0 40px #FDE68A; } }
+  .reward-medal { display: inline-block; font-size: 22px; animation: medalSpin 3s ease-in-out infinite, medalGlow 2s ease-in-out infinite; margin-right: 6px; vertical-align: middle; }
+  /* BARS */
+  .bar-row { margin-bottom: 10px; }
+  .bar-row:last-child { margin-bottom: 0; }
+  .bar-meta { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+  .bar-track { height: 7px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; }
+  /* ROWS */
+  .info-row { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border2); align-items: flex-start; }
+  .info-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .info-row-tag { flex-shrink: 0; margin-top: 2px; }
+  .info-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .info-sub { font-size: 12px; color: var(--text2); margin-top: 2px; line-height: 1.5; }
+  /* PRIORITY */
+  .priority-row { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border2); }
+  .priority-row:last-child { border-bottom: none; }
+  .p-num { font-size: 22px; font-weight: 600; color: #ddd; min-width: 32px; flex-shrink: 0; }
+  /* MEAL */
+  .meal { background: var(--surface2); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 10px; }
+  .meal:last-child { margin-bottom: 0; }
+  .meal-name { font-size: 13px; font-weight: 600; margin-bottom: 5px; }
+  .meal-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 7px; }
+  .meal-pill { font-size: 10px; padding: 2px 8px; background: white; border: 1px solid var(--border2); border-radius: 100px; color: var(--text2); }
+  .meal-pf { font-size: 11px; color: var(--teal-dark); margin-bottom: 6px; }
+  .meal-body { font-size: 12px; color: var(--text2); line-height: 1.7; }
+  /* SMOOTHIE */
+  .smoothie { background: var(--surface2); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 10px; }
+  .smoothie:last-child { margin-bottom: 0; }
+  .s-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .s-focus { font-size: 11px; margin-bottom: 7px; display: inline-block; }
+  .s-body { font-size: 12px; color: var(--text2); line-height: 1.7; }
+  /* GROCERY */
+  .grocery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 500px) { .grocery-grid { grid-template-columns: 1fr; } }
+  .g-section { background: var(--surface2); border-radius: var(--radius-sm); padding: 12px 14px; }
+  .g-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3); margin-bottom: 8px; }
+  .g-item { font-size: 12px; color: var(--text); padding: 4px 0; border-bottom: 1px solid var(--border2); display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .g-item:last-child { border-bottom: none; }
+  .g-item.checked { text-decoration: line-through; color: var(--text3); }
+  .g-box { width: 13px; height: 13px; border: 1.5px solid #ccc; border-radius: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .g-box.checked { background: var(--green); border-color: var(--green); }
+  .g-box.checked::after { content: '✓'; font-size: 9px; color: white; line-height: 1; }
+  /* ALCOHOL */
+  .spirit-row { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border2); align-items: flex-start; }
+  .spirit-row:last-child { border-bottom: none; }
+  .spirit-rank { font-size: 12px; font-weight: 600; color: var(--text3); min-width: 20px; padding-top: 2px; }
+  .spirit-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+  .spirit-note { font-size: 12px; color: var(--text2); line-height: 1.5; }
+  .protocol-row { display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border2); }
+  .protocol-row:last-child { border-bottom: none; }
+  .proto-time { font-size: 11px; font-weight: 600; color: var(--text2); min-width: 130px; flex-shrink: 0; padding-top: 2px; }
+  .proto-what { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .proto-why { font-size: 12px; color: var(--text2); }
+  /* VISION */
+  .vision-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .v-item { background: var(--surface2); border-radius: var(--radius-sm); padding: 10px 12px; }
+  .v-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text3); margin-bottom: 4px; }
+  .v-val { font-size: 13px; color: var(--text); }
+  /* SCORE COLOR */
+  .score-elite { color: var(--green); }
+  .score-good { color: #3B6D11; }
+  .score-avg { color: var(--amber); }
+  .score-low { color: var(--red); }
+  /* MISC */
+  .section-header { margin-bottom: 20px; }
+  .section-header h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+  .section-header p { font-size: 13px; color: var(--text2); }
+  .divider-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3); text-align: center; padding: 8px 0; background: var(--surface2); border-radius: var(--radius-sm); margin: 8px 0; }
+  .insight-box { background: var(--purple-bg); border-radius: var(--radius-sm); padding: 14px 16px; margin-top: 8px; }
+  .insight-box p { font-size: 13px; color: var(--purple-dark); line-height: 1.7; }
+  .reset-btn { font-size: 12px; color: var(--text3); background: none; border: 1px solid var(--border); padding: 5px 14px; border-radius: var(--radius-sm); cursor: pointer; margin-top: 14px; }
+  .reset-btn:hover { background: var(--surface2); }
+  .mode-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .mode-toggle-btn { font-size: 12px; font-weight: 600; padding: 7px 16px; border-radius: var(--radius-sm); cursor: pointer; border: 1.5px solid var(--border); background: var(--surface); color: var(--text2); transition: all 0.15s; }
+  .mode-toggle-btn:hover { background: var(--surface2); }
+  .mode-toggle-btn.dayoff { background: var(--teal-bg); border-color: var(--teal); color: var(--teal-dark); }
+  .mode-badge { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 100px; }
+  .mode-badge.office { background: var(--blue-bg); color: var(--blue-dark); }
+  .mode-badge.dayoff { background: var(--teal-bg); color: var(--teal-dark); }
+  .dayoff-only { display: none; }
+  .score-guide { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .sg-item { background: var(--surface2); border-radius: var(--radius-sm); padding: 10px 12px; }
+  .sg-num { font-size: 18px; font-weight: 600; margin-bottom: 2px; }
+  .sg-label { font-size: 11px; color: var(--text2); }
+  /* HABIT LOG */
+  .hlog-toggle { display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none; }
+  .hlog-toggle:hover { opacity:0.8; }
+  .hlog-chevron { font-size:12px; color:var(--text3); transition:transform 0.2s; }
+  .hlog-chevron.open { transform:rotate(180deg); }
+  .hlog-body { display:none; margin-top:14px; }
+  .hlog-body.open { display:block; }
+  .hlog-row { display:grid; grid-template-columns: 90px 80px 1fr 110px; gap:8px; align-items:center; padding:8px 0; border-bottom:1px solid var(--border2); font-size:12px; }
+  .hlog-row:last-child { border-bottom:none; }
+  .hlog-head { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text3); }
+  .hlog-date { color:var(--text2); }
+  .hlog-day { color:var(--text3); }
+  .hlog-score { font-weight:600; color:var(--text); }
+  .hlog-bucket { font-size:11px; font-weight:600; padding:2px 8px; border-radius:20px; text-align:center; }
+  .hlog-elite { background:var(--green-bg); color:var(--green-dark); }
+  .hlog-strong { background:#E8F0DE; color:#3B6D11; }
+  .hlog-avg { background:var(--amber-bg); color:var(--amber-dark); }
+  .hlog-low { background:var(--red-bg); color:var(--red-dark); }
+  .hlog-empty { font-size:12px; color:var(--text3); text-align:center; padding:16px 0; }
+  /* REFLECT TAB */
+  .hour-row { display:grid; grid-template-columns:56px 1fr auto; gap:10px; align-items:center; padding:6px 0; border-bottom:1px solid var(--border2); }
+  .hour-row:last-child { border-bottom:none; }
+  .hour-label { font-size:11px; color:var(--text3); font-weight:600; text-align:right; }
+  .hour-input { padding:7px 10px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:12px; font-family:inherit; color:var(--text); background:var(--surface); outline:none; width:100%; transition:border-color 0.15s; }
+  .hour-input:focus { border-color:var(--blue); }
+  .health-toggle { display:flex; gap:4px; flex-shrink:0; }
+  .htog-btn { font-size:11px; padding:4px 8px; border-radius:20px; border:1.5px solid var(--border); background:var(--surface2); color:var(--text3); cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+  .htog-btn.active-good { background:var(--green-bg); border-color:var(--green); color:var(--green-dark); font-weight:600; }
+  .htog-btn.active-bad { background:var(--red-bg); border-color:var(--red); color:var(--red-dark); font-weight:600; }
+  .reflect-kpi { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px; }
+  .reflect-textarea { width:100%; min-height:120px; padding:12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:13px; font-family:inherit; color:var(--text); background:var(--surface); resize:vertical; outline:none; line-height:1.6; transition:border-color 0.15s; }
+  .reflect-textarea:focus { border-color:var(--blue); }
+  .reflect-save-btn { background:var(--text); color:#fff; border:none; border-radius:var(--radius-sm); padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer; width:100%; margin-top:10px; transition:opacity 0.15s; }
+  .reflect-save-btn:hover { opacity:0.85; }
+  .rlog-day-card { border:1px solid var(--border2); border-radius:var(--radius-sm); margin-bottom:10px; overflow:hidden; }
+  .rlog-day-header { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--surface2); cursor:pointer; }
+  .rlog-day-header:hover { opacity:0.85; }
+  .rlog-day-title { font-size:13px; font-weight:600; color:var(--text); }
+  .rlog-day-meta { font-size:11px; color:var(--text3); }
+  .rlog-day-body { display:none; padding:12px 14px; }
+  .rlog-day-body.open { display:block; }
+  .rlog-hour-item { display:flex; gap:10px; font-size:12px; padding:4px 0; border-bottom:1px solid var(--border2); }
+  .rlog-hour-item:last-child { border-bottom:none; }
+  .rlog-hour-time { color:var(--text3); min-width:44px; font-weight:600; }
+  .rlog-hour-act { color:var(--text); flex:1; }
+  .rlog-hour-badge { font-size:10px; font-weight:700; padding:1px 6px; border-radius:10px; flex-shrink:0; }
+  .rlog-good { background:var(--green-bg); color:var(--green-dark); }
+  .rlog-bad { background:var(--red-bg); color:var(--red-dark); }
+  .rlog-reflection { margin-top:10px; font-size:12px; color:var(--text2); line-height:1.6; font-style:italic; border-top:1px solid var(--border2); padding-top:10px; }
+  .reflect-sync { font-size:11px; font-weight:500; opacity:0; transition:opacity 0.4s; }
+  .ninety-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  @media (max-width: 600px) { .ninety-grid { grid-template-columns: 1fr; } }
+  /* AGE MILESTONES */
+  .age-milestone-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media (max-width: 640px) { .age-milestone-grid { grid-template-columns: 1fr; } }
+  .age-card { border-radius: var(--radius); padding: 18px; border: 1.5px solid transparent; }
+  .age-card-29 { background: #FFF8EC; border-color: #E8C87A; }
+  .age-card-30 { background: var(--blue-bg); border-color: var(--blue); }
+  .age-card-31 { background: var(--green-bg); border-color: var(--green); }
+  .age-badge { display: inline-block; font-size: 28px; font-weight: 700; line-height: 1; margin-bottom: 2px; }
+  .age-badge-29 { color: #BA7517; }
+  .age-badge-30 { color: var(--blue-dark); }
+  .age-badge-31 { color: var(--green-dark); }
+  .age-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+  .age-label-29 { color: var(--amber-dark); }
+  .age-label-30 { color: var(--blue-dark); }
+  .age-label-31 { color: var(--green-dark); }
+  .age-milestone { display: flex; gap: 8px; font-size: 12px; margin-bottom: 8px; line-height: 1.45; color: var(--text); }
+  .age-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+  .phase-card { background: var(--surface2); border-radius: var(--radius-sm); padding: 14px; }
+  .phase-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; }
+  .phase-sub { font-size: 11px; color: var(--text3); margin-bottom: 10px; }
+  .phase-item { display: flex; gap: 7px; font-size: 12px; margin-bottom: 6px; line-height: 1.4; color: var(--text); }
+  .phase-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .gap-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border2); font-size: 13px; }
+  .gap-row:last-child { border-bottom: none; }
+  .gap-now { color: var(--text3); font-size: 12px; }
+  .gap-arrow { color: var(--text3); margin: 0 8px; }
+  .gap-target { color: var(--green-dark); font-weight: 600; font-size: 12px; }
+  .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  @media (max-width: 600px) { .week-grid { grid-template-columns: repeat(4, 1fr); } }
+  .day-col { background: var(--surface2); border-radius: var(--radius-sm); padding: 10px 8px; }
+  .day-name { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text3); text-align: center; margin-bottom: 8px; }
+  .day-item { font-size: 10px; color: var(--text); padding: 3px 0; border-bottom: 1px solid var(--border2); line-height: 1.4; }
+  .day-item:last-child { border-bottom: none; }
+  .day-col.sunday { border: 1.5px solid var(--red); }
+  .non-neg { background: var(--red-bg); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 10px; }
+  .non-neg-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--red-dark); margin-bottom: 8px; }
+  .non-neg-item { font-size: 13px; color: var(--red-dark); padding: 5px 0; border-bottom: 1px solid rgba(231,75,74,0.2); display: flex; gap: 8px; align-items: flex-start; }
+  .non-neg-item:last-child { border-bottom: none; }
+  .non-neg-num { font-weight: 700; flex-shrink: 0; }
+  h2.page-section { font-size: 13px; font-weight: 600; color: var(--text); margin: 22px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border2); }
+  /* MOTIVATION */
+  .fuel-toggle-btn { width: 100%; text-align: left; font-size: 13px; font-weight: 600; padding: 14px 18px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; border: none; border-radius: var(--radius); cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-family: inherit; margin-bottom: 14px; }
+  .fuel-toggle-btn:hover { opacity: 0.92; }
+  .fuel-toggle-arrow { font-size: 16px; transition: transform 0.2s; }
+  .fuel-toggle-btn.open .fuel-toggle-arrow { transform: rotate(180deg); }
+  .fuel-panel { display: none; margin-bottom: 14px; }
+  .fuel-panel.open { display: block; }
+  .future-self-card { background: linear-gradient(135deg, #0f3460, #533483); border-radius: var(--radius); padding: 22px; margin-bottom: 12px; color: white; }
+  .future-self-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; opacity: 0.7; margin-bottom: 10px; }
+  .future-self-visual { font-size: 52px; text-align: center; padding: 14px 0 10px; }
+  .future-self-desc { font-size: 13px; line-height: 1.8; opacity: 0.92; }
+  .future-self-name { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .identity-card { background: var(--surface2); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 12px; border-left: 4px solid var(--text); }
+  .identity-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-bottom: 10px; }
+  .identity-line { font-size: 13px; font-weight: 600; color: var(--text); padding: 6px 0; border-bottom: 1px solid var(--border2); line-height: 1.5; }
+  .identity-line:last-child { border-bottom: none; }
+  .identity-line::before { content: "I am "; color: var(--text3); font-weight: 400; }
+  .manson-card { background: #1a1a1a; border-radius: var(--radius); padding: 18px; margin-bottom: 12px; color: white; }
+  .manson-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #aaa; margin-bottom: 10px; }
+  .manson-quote { font-size: 15px; font-weight: 700; line-height: 1.6; margin-bottom: 10px; }
+  .manson-sub { font-size: 12px; color: #bbb; line-height: 1.7; }
+  .atomic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  @media (max-width: 500px) { .atomic-grid { grid-template-columns: 1fr; } }
+  .atomic-law { border-radius: var(--radius-sm); padding: 14px; }
+  .atomic-law-num { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; opacity: 0.8; }
+  .atomic-law-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .atomic-law-tom { font-size: 11px; line-height: 1.6; opacity: 0.85; }
+  .stack-card { background: var(--surface2); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 12px; }
+  .stack-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-bottom: 10px; }
+  .stack-row { font-size: 12px; color: var(--text); padding: 7px 0; border-bottom: 1px solid var(--border2); line-height: 1.5; }
+  .stack-row:last-child { border-bottom: none; }
+  .stack-after { color: var(--text3); font-size: 11px; }
+  .stack-will { color: var(--green-dark); font-weight: 600; }
+  .manson-action { background: var(--red-bg); border-radius: var(--radius); padding: 16px 18px; border-left: 4px solid var(--red); }
+  .manson-action-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--red-dark); margin-bottom: 8px; }
+  .manson-action-text { font-size: 14px; font-weight: 700; color: var(--red-dark); line-height: 1.6; }
+  /* PF PROTOCOL PANEL */
+  .pf-wrap { border-bottom: 1px solid var(--border2); }
+  .pf-wrap .habit-row { border-bottom: none; }
+  .pf-expand-btn { font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 100px; border: 1.5px solid var(--purple); background: var(--purple-bg); color: var(--purple-dark); cursor: pointer; white-space: nowrap; flex-shrink: 0; margin-left: 6px; font-family: inherit; }
+  .pf-expand-btn:hover { background: var(--purple); color: white; }
+  .pf-panel { display: none; background: var(--surface2); border-radius: var(--radius-sm); margin: 0 0 10px 31px; overflow: hidden; }
+  .pf-panel.open { display: block; }
+  .pf-section-head { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 10px 14px 6px; color: var(--purple-dark); background: var(--purple-bg); border-bottom: 1px solid rgba(127,119,221,0.15); }
+  .pf-step { display: grid; grid-template-columns: 28px 1fr 70px; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--border2); align-items: start; font-size: 11px; line-height: 1.5; }
+  .pf-step:last-child { border-bottom: none; }
+  .pf-step-num { font-weight: 700; color: var(--text3); font-size: 12px; padding-top: 1px; }
+  .pf-step-body { color: var(--text); }
+  .pf-step-activity { font-weight: 600; margin-bottom: 2px; font-size: 11px; }
+  .pf-step-desc { color: var(--text2); font-size: 11px; line-height: 1.5; }
+  .pf-step-cue { font-size: 10px; color: var(--purple-dark); font-style: italic; line-height: 1.4; padding-top: 1px; }
+  .pf-step-dur { font-size: 10px; font-weight: 600; color: var(--text3); text-align: right; padding-top: 2px; white-space: nowrap; }
+  .pf-row { display: grid; grid-template-columns: 110px 1fr 1fr; gap: 8px; padding: 7px 14px; border-bottom: 1px solid var(--border2); font-size: 11px; line-height: 1.5; }
+  .pf-row:last-child { border-bottom: none; }
+  .pf-row-label { font-weight: 600; color: var(--text); }
+  .pf-row-desc { color: var(--text2); }
+  .pf-row-cue { color: var(--purple-dark); font-style: italic; font-size: 10px; }
+  .pf-rule { display: grid; grid-template-columns: 140px 1fr; gap: 8px; padding: 7px 14px; border-bottom: 1px solid var(--border2); font-size: 11px; line-height: 1.5; }
+  .pf-rule:last-child { border-bottom: none; }
+  .pf-rule-label { font-weight: 600; color: var(--text); }
+  .pf-rule-val { color: var(--text2); }
+  .pf-main-cue { font-size: 11px; font-weight: 600; color: var(--purple-dark); padding: 8px 14px; background: rgba(127,119,221,0.08); font-style: italic; }
+  .pf-drill { display: grid; grid-template-columns: 1fr 90px 1fr; gap: 8px; padding: 7px 14px; border-bottom: 1px solid var(--border2); font-size: 11px; line-height: 1.5; }
+  .pf-drill:last-child { border-bottom: none; }
+  .pf-drill-name { font-weight: 600; color: var(--text); }
+  .pf-drill-sets { color: var(--text3); font-size: 10px; }
+  .pf-drill-cue { color: var(--purple-dark); font-style: italic; font-size: 10px; }
+  /* TASKS */
+  .task-add-row { display: flex; gap: 8px; margin-bottom: 18px; }
+  .task-input { flex: 1; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; color: var(--text); background: var(--surface); outline: none; transition: border-color 0.15s; }
+  .task-input:focus { border-color: var(--blue); }
+  .task-add-btn { padding: 9px 18px; background: var(--text); color: white; border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; font-family: inherit; }
+  .task-add-btn:hover { opacity: 0.85; }
+  .task-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+  @media (max-width: 500px) { .task-kpi-row { grid-template-columns: repeat(2, 1fr); } }
+  .task-progress-wrap { margin-bottom: 18px; }
+  .task-list { display: flex; flex-direction: column; gap: 0; }
+  .task-row { display: flex; align-items: flex-start; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border2); }
+  .task-row:last-child { border-bottom: none; }
+  .task-check { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid #ccc; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; background: white; }
+  .task-check.done { background: var(--green); border-color: var(--green); }
+  .task-check.done::after { content: ''; display: block; width: 5px; height: 9px; border: 2px solid white; border-left: none; border-top: none; transform: rotate(45deg) translate(-1px, -1px); }
+  .task-body { flex: 1; min-width: 0; }
+  .task-name { font-size: 13px; color: var(--text); line-height: 1.5; word-break: break-word; }
+  .task-name.done { text-decoration: line-through; color: var(--text3); }
+  .task-meta { font-size: 11px; color: var(--text3); margin-top: 3px; }
+  .task-del { font-size: 16px; color: #ccc; cursor: pointer; padding: 0 4px; line-height: 1; flex-shrink: 0; margin-top: 2px; }
+  .task-del:hover { color: var(--red); }
+  .task-empty { text-align: center; padding: 40px 20px; color: var(--text3); font-size: 13px; }
+  .task-section-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); padding: 14px 0 6px; border-top: 1px solid var(--border2); margin-top: 4px; }
+  .task-section-label:first-child { border-top: none; padding-top: 0; }
+  .task-filter-row { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .filter-btn { font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 100px; border: 1.5px solid var(--border); background: var(--surface); color: var(--text2); cursor: pointer; transition: all 0.15s; }
+  .filter-btn.active { background: var(--text); color: white; border-color: var(--text); }
+  .filter-btn:hover:not(.active) { background: var(--surface2); }
+  .priority-select { padding: 9px 10px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; font-family: inherit; color: var(--text2); background: var(--surface); cursor: pointer; outline: none; flex-shrink: 0; }
+  .priority-select:focus { border-color: var(--blue); }
+  .p-high { background: var(--red-bg); color: var(--red-dark); }
+  .p-med { background: var(--amber-bg); color: var(--amber-dark); }
+  .p-low { background: var(--blue-bg); color: var(--blue-dark); }
+  /* ── DAILY LOG TAB ──────────────────────────────────── */
+  .log-stars { display:flex; gap:6px; margin-bottom:4px; }
+  .log-star { font-size:26px; cursor:pointer; color:#ddd; transition:color 0.1s; line-height:1; user-select:none; }
+  .log-star.lit { color:#F5A623; }
+  .log-kpi-mini { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  @media (max-width:500px) { .log-kpi-mini { grid-template-columns:repeat(2,1fr); } }
+  .log-legend { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px; }
+  .log-legend-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+  .log-legend-item { display:flex; align-items:center; gap:4px; font-size:11px; color:var(--text2); }
+  .log-entry-row { display:grid; grid-template-columns:62px 1fr 96px; gap:10px; align-items:center; padding:9px 10px 9px 0; border-bottom:1px solid var(--border2); border-left:3px solid transparent; padding-left:10px; transition:border-left-color 0.15s; }
+  .log-entry-row:last-child { border-bottom:none; }
+  .log-entry-row:nth-child(even) { background:rgba(0,0,0,0.012); border-radius:0 4px 4px 0; }
+  .log-entry-time { font-size:11px; font-weight:600; color:var(--text3); text-align:right; }
+  .log-entry-input { padding:7px 10px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:12px; font-family:inherit; color:var(--text); background:var(--surface); outline:none; transition:border-color 0.15s; width:100%; }
+  .log-entry-input:focus { border-color:var(--blue); }
+  .log-cat-wrap { display:flex; align-items:center; gap:5px; }
+  .log-cat-dot { width:11px; height:11px; border-radius:50%; flex-shrink:0; background:var(--surface2); border:1.5px solid var(--border2); transition:background 0.12s; }
+  .log-cat-sel { padding:5px 4px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:11px; font-family:inherit; color:var(--text); background:var(--surface); outline:none; cursor:pointer; width:100%; }
+  .log-save-btn { background:var(--text); color:#fff; border:none; border-radius:var(--radius-sm); padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer; width:100%; margin-top:4px; transition:opacity 0.15s; }
+  .log-save-btn:hover { opacity:0.85; }
+  .log-sync { font-size:11px; font-weight:500; opacity:0; transition:opacity 0.4s; }
+  .log-past-card { border:1px solid var(--border2); border-radius:var(--radius); margin-bottom:10px; overflow:hidden; }
+  .log-past-header { padding:12px 16px 10px; cursor:pointer; background:var(--surface); transition:background 0.12s; }
+  .log-past-header:hover { background:var(--surface2); }
+  .log-past-top { display:flex; justify-content:space-between; align-items:flex-start; }
+  .log-past-date { font-size:14px; font-weight:700; color:var(--text); }
+  .log-past-day { font-size:11px; color:var(--text3); margin-top:1px; }
+  .log-past-rating { font-size:14px; letter-spacing:2px; margin-top:3px; }
+  .log-strip { display:flex; gap:2px; margin:8px 0 2px; }
+  .log-strip-seg { height:7px; flex:1; border-radius:2px; }
+  .lss-empty { background:var(--surface2); }
+  .lss-work { background:var(--blue); }
+  .lss-gym { background:var(--teal); }
+  .lss-food { background:#F4793A; }
+  .lss-social { background:var(--green); }
+  .lss-personal { background:var(--amber); }
+  .lss-rest { background:var(--purple); }
+  .lss-other { background:#bbb; }
+  .log-past-stats { font-size:11px; color:var(--text3); margin-top:3px; }
+  .log-past-body { display:none; border-top:1px solid var(--border2); background:var(--surface2); }
+  .log-past-body.open { display:block; }
+  .log-past-hour-row { display:flex; gap:10px; align-items:baseline; padding:5px 14px; border-bottom:1px solid var(--border2); font-size:12px; }
+  .log-past-hour-row:last-child { border-bottom:none; }
+  .log-past-hour-time { color:var(--text3); min-width:54px; font-weight:600; font-size:11px; }
+  .log-past-hour-act { color:var(--text); flex:1; }
+  .log-past-cat { font-size:10px; font-weight:700; padding:1px 7px; border-radius:100px; flex-shrink:0; }
+  .lpc-work { background:var(--blue-bg); color:var(--blue-dark); }
+  .lpc-gym { background:var(--teal-bg); color:var(--teal-dark); }
+  .lpc-food { background:#FEF0E8; color:#7A3F12; }
+  .lpc-social { background:var(--green-bg); color:var(--green-dark); }
+  .lpc-personal { background:var(--amber-bg); color:var(--amber-dark); }
+  .lpc-rest { background:var(--purple-bg); color:var(--purple-dark); }
+  .lpc-other { background:var(--surface2); color:var(--text2); }
+  .log-past-win { padding:10px 14px; font-size:12px; border-top:1px solid var(--border2); }
+  .log-past-win-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text3); margin-bottom:2px; }
+  .log-past-win-text { color:var(--text); font-style:italic; line-height:1.5; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-brand">Life OS <span>· Tom</span></div>
+    <div class="tab active" onclick="showTab('daily')">Daily</div>
+    <div class="tab" onclick="showTab('system')">My System</div>
+    <div class="tab" onclick="showTab('goals')">Goals</div>
+    <div class="tab" onclick="showTab('nutrition')">Nutrition</div>
+    <div class="tab" onclick="showTab('reference')">Reference</div>
+    <div class="tab" onclick="showTab('tasks')">Tasks</div>
+    <div class="tab" onclick="showTab('reflect')">Reflect</div>
+    <div class="tab" onclick="showTab('log')">Log</div>
+  </div>
+</nav>
+
+<!-- ═══════════════ DAILY TAB ═══════════════ -->
+<div class="page active" id="tab-daily">
+  <div class="section-header">
+    <h1 id="date-display">Today</h1>
+    <p>Check off your habits as you complete them.</p>
+  </div>
+
+  <div class="mode-bar">
+    <span class="mode-badge office" id="mode-badge">📅 Office Day</span>
+    <button class="mode-toggle-btn" id="mode-toggle-btn" onclick="toggleDayMode()">Switch to Day Off</button>
+    <span style="font-size:11px; color:var(--text3);">Weekend / holiday / WFH day?</span>
+  </div>
+
+  <!-- MOTIVATION FUEL -->
+  <button class="fuel-toggle-btn" id="fuel-btn" onclick="toggleFuel()">
+    <span>⚡ Morning Fuel — open this first</span>
+    <span class="fuel-toggle-arrow">▼</span>
+  </button>
+  <div class="fuel-panel" id="fuel-panel">
+
+    <!-- FUTURE SELF -->
+    <div class="future-self-card">
+      <div class="future-self-title">Your future self — close your eyes and see him</div>
+      <div class="future-self-visual">💪</div>
+      <div class="future-self-name">Tom at 35. DC. His own firm.</div>
+      <div class="future-self-desc">
+        Chiseled. Lean. Arms that fill out a shirt. A body built from 7 years of showing up — not motivation, just discipline. He walks into a room and people notice — not because he's performing, but because he's <em>actually there</em>, present and calm.<br><br>
+        He's not anxious in the morning. He doesn't check his phone first thing. He doesn't fake it at work — he <em>is</em> it. The pelvic floor pain is a distant memory. He's in a relationship with someone who knows the real version of him — not the managed, performed version.<br><br>
+        <strong>That man does the protocol today. Not when he feels like it. Today.</strong>
+      </div>
+    </div>
+
+    <!-- IDENTITY STATEMENTS — Atomic Habits -->
+    <div class="identity-card">
+      <div class="identity-title">Atomic Habits — Identity statements · Say these out loud</div>
+      <div class="identity-line">the kind of person who gets up when the alarm goes off.</div>
+      <div class="identity-line">someone who does the hard thing first.</div>
+      <div class="identity-line">a man who takes care of his body without negotiating.</div>
+      <div class="identity-line">someone who shows up at the office — every single day.</div>
+      <div class="identity-line">the type of person who doesn't need motivation to execute.</div>
+      <div class="identity-line">building toward something real — not performing, becoming.</div>
+    </div>
+
+    <!-- MARK MANSON -->
+    <div class="manson-card">
+      <div class="manson-title">Mark Manson — The Do Something Principle</div>
+      <div class="manson-quote">"Don't just sit there. Do something. The answers will follow."</div>
+      <div class="manson-sub">
+        Motivation doesn't create action. <strong style="color:white;">Action creates motivation.</strong> You are waiting for a feeling that only appears after you move. Every morning you negotiate with yourself is a morning where the other guy wins — the one who stays small, stays safe, and stays stuck. Manson's point: you don't get to feel ready first. You act, feel resistance, act anyway, and the motivation shows up as a byproduct. Not before. Never before.<br><br>
+        <strong style="color:white;">Your pain is real. Your struggle is valid. And you are 100% responsible for what happens next.</strong> Not Anthropic, not your PT, not your manager. You. That's not a punishment — that's the only thing that actually gives you power over it.
+      </div>
+    </div>
+
+    <!-- ATOMIC HABITS 4 LAWS -->
+    <div class="atomic-grid">
+      <div class="atomic-law" style="background:var(--blue-bg); color:var(--blue-dark);">
+        <div class="atomic-law-num">Law 1</div>
+        <div class="atomic-law-title">Make it Obvious</div>
+        <div class="atomic-law-tom">Gym clothes on the floor. Protocol open on your phone. Supplements on the counter visible. Remove the decision — the cue is already there.</div>
+      </div>
+      <div class="atomic-law" style="background:var(--purple-bg); color:var(--purple-dark);">
+        <div class="atomic-law-num">Law 2</div>
+        <div class="atomic-law-title">Make it Attractive</div>
+        <div class="atomic-law-tom">Temptation bundling: save your favourite playlist ONLY for the PF protocol or gym. The music is the reward for starting — not for finishing.</div>
+      </div>
+      <div class="atomic-law" style="background:var(--green-bg); color:var(--green-dark);">
+        <div class="atomic-law-num">Law 3</div>
+        <div class="atomic-law-title">Make it Easy</div>
+        <div class="atomic-law-tom">2-minute rule: you only commit to 2 minutes. Get in the hot tub. Put on shoes. Open the file. Starting is the only job. Finishing happens automatically.</div>
+      </div>
+      <div class="atomic-law" style="background:var(--amber-bg); color:var(--amber-dark);">
+        <div class="atomic-law-num">Law 4</div>
+        <div class="atomic-law-title">Make it Satisfying</div>
+        <div class="atomic-law-tom">Check the box. Watch the score go up. That's not trivial — your brain tracks visible wins. The dashboard score IS the reward loop. Use it.</div>
+      </div>
+    </div>
+
+    <!-- HABIT STACKING -->
+    <div class="stack-card">
+      <div class="stack-title">Atomic Habits — Habit stacking · your personal chains</div>
+      <div class="stack-row"><span class="stack-after">After I turn off my alarm →</span><br><span class="stack-will">I put both feet on the floor immediately. No negotiation.</span></div>
+      <div class="stack-row"><span class="stack-after">After I stand up →</span><br><span class="stack-will">I make my bed. Takes 90 seconds. First win logged.</span></div>
+      <div class="stack-row"><span class="stack-after">After I make my bed →</span><br><span class="stack-will">I drink my full Yeti Flask w/ creatine &amp; electrolytes and take my supplements.</span></div>
+      <div class="stack-row"><span class="stack-after">After work, when I get home →</span><br><span class="stack-will">I go directly to the hot tub. Clothes off, in the water. Protocol starts itself.</span></div>
+      <div class="stack-row"><span class="stack-after">After the hot tub →</span><br><span class="stack-will">I put on gym shoes. Already dressed = already going.</span></div>
+      <div class="stack-row"><span class="stack-after">After dinner →</span><br><span class="stack-will">I put my phone in the kitchen. Not at 10:45pm — right after dinner.</span></div>
+    </div>
+
+    <!-- MANSON ACTION RULE -->
+    <div class="manson-action">
+      <div class="manson-action-title">The rule for today — Manson</div>
+      <div class="manson-action-text">"Never miss twice." You missed yesterday? Fine. Today is non-negotiable. One miss is an accident. Two misses is the start of a new habit — the wrong one. The score resets every morning. What you do in the next 60 minutes is the only thing that matters right now.</div>
+    </div>
+
+  </div><!-- /fuel-panel -->
+
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-val" id="daily-score" style="color:var(--red);">0%</div><div class="kpi-label">Today's score</div></div>
+    <div class="kpi"><div class="kpi-val" id="done-count">0/17</div><div class="kpi-label">Habits done</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--text3);" id="streak-val">Day 1</div><div class="kpi-label">Start streak</div></div>
+    <div class="kpi"><div class="kpi-val">28</div><div class="kpi-label">Your age — now</div></div>
+  </div>
+
+  <div class="card">
+    <div class="progress-wrap" style="margin-top:0;">
+      <div class="progress-meta"><span>Daily progress</span><span id="pb-pct" style="font-weight:600;">0%</span></div>
+      <div class="progress-track"><div class="progress-fill" id="pb-fill" style="width:0%; background:var(--green);"></div></div>
+    </div>
+
+    <div class="habit-group-label">Morning ritual</div>
+    <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Wake up — do NOT go back to bed</div><div class="habit-why">Feet hit floor. Alarm off. Stay standing. Most important habit in the system.</div></div><span class="tag tag-red">Critical</span></div>
+    <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">No phone for first 30 minutes</div><div class="habit-why">No Instagram. No TikTok. No news. Your brain first.</div></div><span class="tag tag-red">Critical</span></div>
+    <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Make your bed — immediately after getting up</div><div class="habit-why">First win of the day. Takes 90 seconds. Sets the tone for everything that follows.</div></div><span class="tag tag-blue">Mind</span></div>
+    <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">1 full Yeti Flask w/ creatine, electrolytes packet &amp; 3 scoops cold pressed beet powder</div><div class="habit-why">Before coffee. Before anything.</div></div><span class="tag tag-green">Health</span></div>
+    <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Creatine + Vitamin D + Magnesium glycinate (AM)</div><div class="habit-why">Daily — not when you remember. All three matter.</div></div><span class="tag tag-green">Health</span></div>
+    <div class="habit-row office-only" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Pack lunch from fridge into bag</div><div class="habit-why">↳ Bring the container home at end of day.</div></div><span class="tag tag-blue">Prep</span></div>
+    <div class="habit-row office-only" style="background:linear-gradient(135deg,#FFFBE6,#FEF3C7);border-radius:6px;border:1.5px solid #F59E0B;pointer-events:none;cursor:default;">
+      <div class="hcheck" style="border-color:#F59E0B;background:#FEF3C7;"></div>
+      <div class="habit-content"><div class="habit-name"><span class="reward-medal">🥇</span><strong>Reward:</strong> Starbucks coffee at 7:45am. You showed up — you earned it.</div></div>
+    </div>
+    <div class="habit-row office-only" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">At the office by 8:00am</div><div class="habit-why">The job-saving move. Leave by 7:10am. No exceptions.</div></div><span class="tag tag-red">Critical</span></div>
+
+    <div class="habit-group-label office-only">Work</div>
+    <div class="habit-row office-only" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">2-minute task start rule — used at least once</div><div class="habit-why">Name the next physical action. Open the file. Type one thing. Break initiation paralysis.</div></div><span class="tag tag-amber">High</span></div>
+    <div class="habit-row office-only" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Ask at least 1 question at work today</div><div class="habit-why">One question. This is how the imposter loop breaks.</div></div><span class="tag tag-amber">High</span></div>
+    <div class="habit-row office-only" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">30 min of financial modeling study</div><div class="habit-why">The skill that closes the gap between performing and being.</div></div><span class="tag tag-amber">High</span></div>
+
+    <div class="habit-group-label dayoff-only">Work block (day off)</div>
+    <div class="habit-row dayoff-only" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">2-hour home work block — completed</div><div class="habit-why">Set a start time, close all tabs, put on focus music. Financial modeling, emails, or any open work task. 2-minute rule to begin.</div></div><span class="tag tag-amber">High</span></div>
+    <div class="habit-row dayoff-only" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">No baths or escapes during the work block</div><div class="habit-why">Day off = free time, not avoidance time. The 2-hour block is protected. After it's done, the day is yours.</div></div><span class="tag tag-amber">High</span></div>
+
+    <div class="habit-group-label">Body & health</div>
+    <div class="pf-wrap">
+      <div class="habit-row" onclick="toggle(this)" style="border-bottom:none;">
+        <div class="hcheck"></div>
+        <div class="habit-content">
+          <div class="habit-name">Full pelvic floor protocol — hot tub + all 6 exercises + wand</div>
+          <div class="habit-why">Hot tub FIRST. All 6. Wand work. No shortcuts. Every single day.</div>
+        </div>
+        <button class="pf-expand-btn" onclick="event.stopPropagation(); togglePF()" id="pf-btn">📋 Steps</button>
+        <span class="tag tag-red" style="flex-shrink:0;">Critical</span>
+      </div>
+
+      <div class="pf-panel" id="pf-panel">
+
+        <!-- 1. HOT TUB PROTOCOL -->
+        <div class="pf-section-head">1 — Hot Tub Protocol v2 · Pre-Gym Reset &amp; Activation</div>
+        <div class="pf-step"><div class="pf-step-num">1</div><div class="pf-step-body"><div class="pf-step-activity">Settle / downshift</div><div class="pf-step-desc">Sit upright, let body warm up, breathe slowly.</div><div class="pf-step-cue">Jaw relaxed, ribs soft, shoulders down.</div></div><div class="pf-step-dur">1–2 min</div></div>
+        <div class="pf-step"><div class="pf-step-num">2</div><div class="pf-step-body"><div class="pf-step-activity">Diaphragm + pelvic drop</div><div class="pf-step-desc">Breathe into belly/ribs and let the pelvic floor soften on each inhale.</div><div class="pf-step-cue">"Let the floor drop." Do not push or bear down.</div></div><div class="pf-step-dur">2–3 min</div></div>
+        <div class="pf-step"><div class="pf-step-num">3</div><div class="pf-step-body"><div class="pf-step-activity">Ankles / feet</div><div class="pf-step-desc">Slow ankle circles, toe flex/extend, gentle foot activation.</div><div class="pf-step-cue">Keep it slow and controlled.</div></div><div class="pf-step-dur">1–2 min</div></div>
+        <div class="pf-step"><div class="pf-step-num">4</div><div class="pf-step-body"><div class="pf-step-activity">Adductor &amp; Hip Capsule — Slow Knee Circles</div><div class="pf-step-desc">Sit upright with slight posterior pelvic tilt, lift one knee to ~90°, draw slow 6–8 inch circles outward and inward.</div><div class="pf-step-cue">Relax jaw and pelvic floor, breathe diaphragmatically, feel hip glide in socket, avoid gripping quads.</div></div><div class="pf-step-dur">1–2 min / leg</div></div>
+        <div class="pf-step"><div class="pf-step-num">5</div><div class="pf-step-body"><div class="pf-step-activity">Gentle hip IR/ER</div><div class="pf-step-desc">Slowly rotate hips inward/outward within comfortable range.</div><div class="pf-step-cue">Small range. No forcing.</div></div><div class="pf-step-dur">2–3 min</div></div>
+        <div class="pf-step"><div class="pf-step-num">6</div><div class="pf-step-body"><div class="pf-step-activity">Adductor wake-up</div><div class="pf-step-desc">Gentle adductor squeezes or light press into hands/towel.</div><div class="pf-step-cue">"Activation then soften." Don't brace.</div></div><div class="pf-step-dur">2–3 min</div></div>
+        <div class="pf-step"><div class="pf-step-num">7</div><div class="pf-step-body"><div class="pf-step-activity">Reset</div><div class="pf-step-desc">Return to stillness and breathing before leaving hot tub.</div><div class="pf-step-cue">Calm nervous system before training.</div></div><div class="pf-step-dur">1 min</div></div>
+
+        <!-- 2. FOAM ROLL -->
+        <div class="pf-section-head">2 — Foam Roll &amp; Lacrosse Ball Work</div>
+        <div class="pf-row"><div class="pf-row-label">Adductors<br><span style="font-weight:400;color:var(--text3);">Foam roller or ball</span></div><div class="pf-row-desc">Work inner thigh slowly, pausing on tender spots.</div><div class="pf-row-cue">Do not aggressively grind.</div></div>
+        <div class="pf-row"><div class="pf-row-label">Hip flexors / TFL<br><span style="font-weight:400;color:var(--text3);">Ball or roller</span></div><div class="pf-row-desc">Gentle pressure near front/side hip.</div><div class="pf-row-cue">Avoid sharp nerve-like pain.</div></div>
+        <div class="pf-row"><div class="pf-row-label">Glutes / piriformis<br><span style="font-weight:400;color:var(--text3);">Ball</span></div><div class="pf-row-desc">Sit or lean into the ball and breathe.</div><div class="pf-row-cue">Use small shifts, not fast rolling.</div></div>
+        <div class="pf-row"><div class="pf-row-label">Hamstrings<br><span style="font-weight:400;color:var(--text3);">Roller</span></div><div class="pf-row-desc">Slow passes from sit bone toward knee.</div><div class="pf-row-cue">Keep pressure moderate.</div></div>
+        <div class="pf-row"><div class="pf-row-label">Quads<br><span style="font-weight:400;color:var(--text3);">Roller</span></div><div class="pf-row-desc">Slow passes, pause where tissue feels dense.</div><div class="pf-row-cue">Avoid clenching abs/pelvic floor.</div></div>
+        <div class="pf-row"><div class="pf-row-label">Calves / feet<br><span style="font-weight:400;color:var(--text3);">Roller or ball</span></div><div class="pf-row-desc">Slow pressure through calves and arches.</div><div class="pf-row-cue">Useful for chain connection.</div></div>
+        <div class="pf-main-cue">Trigger point rule: Hold 30–90 sec on tender spots while breathing. Small micro-motions. Reset with diaphragmatic breaths after 2–3 spots. Never aggressive stretching immediately after. "Let the muscle melt — don't force it; if it softens or twitches, that's the release."</div>
+
+        <!-- 3. STRETCHING BLOCK -->
+        <div class="pf-section-head">3 — Stretching Block</div>
+        <div class="pf-row"><div class="pf-row-label">Adductor rockbacks<br><span style="font-weight:400;color:var(--text3);">Inner thigh / groin</span></div><div class="pf-row-desc">On hands/knees, extend one leg to side, rock hips back slowly.</div><div class="pf-row-cue">Keep pelvis relaxed.</div></div>
+        <div class="pf-row"><div class="pf-row-label">Hip flexor stretch<br><span style="font-weight:400;color:var(--text3);">Front hip / psoas</span></div><div class="pf-row-desc">Half-kneeling stretch, glute gently engaged.</div><div class="pf-row-cue">Do not arch low back.</div></div>
+        <div class="pf-row"><div class="pf-row-label">Figure-four stretch<br><span style="font-weight:400;color:var(--text3);">Glutes / deep hip</span></div><div class="pf-row-desc">Seated or lying figure-four.</div><div class="pf-row-cue">Breathe into the back of pelvis.</div></div>
+        <div class="pf-row"><div class="pf-row-label">Hamstring stretch<br><span style="font-weight:400;color:var(--text3);">Posterior chain</span></div><div class="pf-row-desc">Gentle hinge or lying hamstring stretch.</div><div class="pf-row-cue">No aggressive pulling.</div></div>
+        <div class="pf-row"><div class="pf-row-label">Calf stretch<br><span style="font-weight:400;color:var(--text3);">Lower leg / foot chain</span></div><div class="pf-row-desc">Wall stretch or step stretch.</div><div class="pf-row-cue">Keep foot tripod grounded.</div></div>
+        <div class="pf-row"><div class="pf-row-label">Deep squat hold<br><span style="font-weight:400;color:var(--text3);">Hips / ankles (optional)</span></div><div class="pf-row-desc">Hold onto support and sink into comfortable squat.</div><div class="pf-row-cue">Relax pelvic floor; don't brace.</div></div>
+        <div class="pf-main-cue">Main cue: stretch gently enough that your nervous system relaxes instead of guarding.</div>
+
+        <!-- 4. NEURO-CLAMS -->
+        <div class="pf-section-head">4 — Neuro-Clams / Activation Block</div>
+        <div class="pf-drill"><div class="pf-drill-name">Neuro-clams</div><div class="pf-drill-sets">2–3 sets × 8–12 / side</div><div class="pf-row-desc">Side-lying, knees bent, slowly open top knee while keeping pelvis stacked. Move slowly, don't roll backward, feel glute med instead of hip flexor.</div></div>
+        <div class="pf-drill"><div class="pf-drill-name">Isometric clam hold</div><div class="pf-drill-sets">2–3 holds × 10–20 sec</div><div class="pf-row-desc">Open slightly and hold. Low effort, steady breath.</div></div>
+        <div class="pf-drill"><div class="pf-drill-name">Adductor squeeze</div><div class="pf-drill-sets">2–3 sets × 8–12</div><div class="pf-row-desc">Squeeze ball/towel between knees lightly. Activate, then fully soften.</div></div>
+        <div class="pf-drill"><div class="pf-drill-name">Glute bridge</div><div class="pf-drill-sets">2–3 sets × 8–12</div><div class="pf-row-desc">Lift hips with ribs down. Don't clench pelvic floor.</div></div>
+        <div class="pf-drill"><div class="pf-drill-name">Dead bug / low-threat core</div><div class="pf-drill-sets">2–3 rounds</div><div class="pf-row-desc">Controlled core movement on back. Ribs down, exhale slowly, no bracing.</div></div>
+        <div class="pf-main-cue">Small range is fine — goal is clean signal, not big movement. Don't chase burn. Breathe throughout. No breath-holding or pelvic floor gripping.</div>
+
+        <!-- 5. UPPER BODY -->
+        <div class="pf-section-head">5 — Upper-Body Strength Block</div>
+        <div class="pf-drill"><div class="pf-drill-name">Pull</div><div class="pf-drill-sets">3 × 8–12</div><div class="pf-row-desc">Cable row, lat pulldown, chest-supported row. Keep neck relaxed, shoulders down/back.</div></div>
+        <div class="pf-drill"><div class="pf-drill-name">Push</div><div class="pf-drill-sets">3 × 8–12</div><div class="pf-row-desc">Machine chest press, dumbbell press, push-ups. Don't flare ribs or brace pelvic floor.</div></div>
+        <div class="pf-drill"><div class="pf-drill-name">Shoulder health</div><div class="pf-drill-sets">2–3 × 12–15</div><div class="pf-row-desc">Face pulls, band pull-aparts, external rotations. Smooth, controlled, no neck tension.</div></div>
+        <div class="pf-drill"><div class="pf-drill-name">Low-threat core</div><div class="pf-drill-sets">2–3 rounds</div><div class="pf-row-desc">Dead bug, Pallof press, suitcase carry. Exhale, ribs down, no hard gripping.</div></div>
+        <div class="pf-drill"><div class="pf-drill-name">Optional arms</div><div class="pf-drill-sets">2–3 × 10–15</div><div class="pf-row-desc">Curls, triceps pressdowns. Keep body relaxed.</div></div>
+        <div class="pf-main-cue">Main rule: upper-body training should not turn into jaw, neck, abs, or pelvic floor tension.</div>
+
+        <!-- 6. STEAM ROOM -->
+        <div class="pf-section-head">6 — Steam Room Routine · Downshift</div>
+        <div class="pf-step"><div class="pf-step-num">1</div><div class="pf-step-body"><div class="pf-step-activity">Settle</div><div class="pf-step-desc">Sit still and let breathing slow.</div><div class="pf-step-cue">Jaw relaxed.</div></div><div class="pf-step-dur">1–2 min</div></div>
+        <div class="pf-step"><div class="pf-step-num">2</div><div class="pf-step-body"><div class="pf-step-activity">Long exhales</div><div class="pf-step-desc">Inhale through nose, long slow exhale.</div><div class="pf-step-cue">Exhale longer than inhale.</div></div><div class="pf-step-dur">3–5 min</div></div>
+        <div class="pf-step"><div class="pf-step-num">3</div><div class="pf-step-body"><div class="pf-step-activity">Body scan</div><div class="pf-step-desc">Scan jaw → neck → ribs → belly → pelvis.</div><div class="pf-step-cue">Unclench each area.</div></div><div class="pf-step-dur">3–5 min</div></div>
+        <div class="pf-step"><div class="pf-step-num">4</div><div class="pf-step-body"><div class="pf-step-activity">Pelvic floor drop</div><div class="pf-step-desc">Let pelvic floor soften on inhale.</div><div class="pf-step-cue">No pushing, no bearing down.</div></div><div class="pf-step-dur">2–4 min</div></div>
+        <div class="pf-step"><div class="pf-step-num">5</div><div class="pf-step-body"><div class="pf-step-activity">Final reset</div><div class="pf-step-desc">Sit quietly before leaving.</div><div class="pf-step-cue">Leave calm, not overstimulated.</div></div><div class="pf-step-dur">1–2 min</div></div>
+        <div class="pf-main-cue">Steam room is for nervous-system decompression — not aggressive stretching.</div>
+
+      </div><!-- /pf-panel -->
+    </div><!-- /pf-wrap -->
+    <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Gym — walk there (no AirPods), 2mi run, upper body</div><div class="habit-why">Already a real habit. Protect it. It's keeping your mental health stable.</div></div><span class="tag tag-green">Health</span></div>
+    <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">4 Yeti Flasks of water today</div><div class="habit-why">You're at 37% of goal. Affects focus, energy, mood, pelvic floor tissue.</div></div><span class="tag tag-green">Health</span></div>
+    <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Finish dinner before 9:15pm — not while scrolling</div><div class="habit-why">Late eating + TikTok = worse sleep, less satiety, more cortisol at bedtime. Knock out a personal task on laptop during dinner instead.</div></div><span class="tag tag-green">Health</span></div>
+
+    <div class="habit-group-label">Finance & focus</div>
+    <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">No impulse purchases today</div><div class="habit-why">CC debt is $12k at ~25% APR. Every unplanned purchase makes it worse. $120k by 30 — zero CC debt first.</div></div><span class="tag tag-blue">Finance</span></div>
+    <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">No masturbation</div><div class="habit-why">Directly worsens pelvic floor tension. Also removes a primary avoidance exit.</div></div><span class="tag tag-red">Critical</span></div>
+
+    <div class="habit-group-label">Evening ritual</div>
+    <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Blender bottle prepped — creatine, electrolytes &amp; beet powder loaded, ready to mix in the morning</div><div class="habit-why">Zero friction in the morning. Powders in tonight = first habit done before you're even awake.</div></div><span class="tag tag-green">Health</span></div>
+    <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Lumosity — complete the daily 5 game goal</div><div class="habit-why">Cognitive training for processing speed + memory. Concussion protocol. Wind down with brain work, not scrolling.</div></div><span class="tag tag-blue">Mind</span></div>
+    <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Gym bag packed — flip flops, towel, ready for steam room &amp; hot tub</div><div class="habit-why">Pack tonight so tomorrow morning has zero friction. No excuses.</div></div><span class="tag tag-green">Health</span></div>
+    <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Phone in kitchen by 10:45pm</div><div class="habit-why">Non-negotiable. The highest-leverage single habit in the system. Fixes sleep, morning, and everything downstream.</div></div><span class="tag tag-red">Critical</span></div>
+    <div class="habit-row office-only" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Work outfit laid out in the bathroom — checked against tomorrow's weather</div><div class="habit-why">No decisions in the morning. Pick it tonight, check the forecast, done.</div></div><span class="tag tag-blue">Mind</span></div>
+    <div class="pf-wrap office-only">
+      <div class="habit-row" onclick="toggle(this)" style="border-bottom:none;">
+        <div class="hcheck"></div>
+        <div class="habit-content">
+          <div class="habit-name">Lunch in fridge &amp; smoothie pack ready to go for tomorrow</div>
+          <div class="habit-why">Morning you will thank tonight you. Grab and go — no decisions, no excuses.</div>
+        </div>
+        <button class="pf-expand-btn" onclick="event.stopPropagation();toggleSmoothiePrep()" id="smoothie-prep-btn">📋 Prep tips</button>
+        <span class="tag tag-green">Health</span>
+      </div>
+      <div class="pf-panel" id="smoothie-prep-panel">
+        <div class="pf-section-head">🥤 Smoothie Prep Tips</div>
+        <div class="pf-step"><span class="pf-step-num">1</span><div class="pf-step-body"><div class="pf-step-activity">Pull the cup from the freezer the moment you wake up</div><div class="pf-step-desc">Everything frozen together = one solid puck on the blade. Set it on the counter first thing and let it sit while you shower and get ready — 5–10 min is all it needs.</div></div></div>
+        <div class="pf-step"><span class="pf-step-num">2</span><div class="pf-step-body"><div class="pf-step-activity">Don't fill the cup past halfway when prepping it the night before</div><div class="pf-step-desc">You're adding milk in the morning on top of frozen ingredients. If the cup is already full of frozen stuff, milk has nowhere to go and it overflows when blending.</div></div></div>
+        <div class="pf-step"><span class="pf-step-num">3</span><div class="pf-step-body"><div class="pf-step-activity">Add milk slowly — stop before the MAX line</div><div class="pf-step-desc">Pour milk to just below the MAX fill line. Frozen ingredients + liquid expand into a vortex — going over the line is what causes the overflow.</div></div></div>
+        <div class="pf-step"><span class="pf-step-num">4</span><div class="pf-step-body"><div class="pf-step-activity">Swap whole almonds for almond butter only</div><div class="pf-step-desc">Whole almonds bounce off the blade and never fully break down. Almond butter blends smoothly and gives you the same nutrition — add a spoonful to the cup when prepping.</div></div></div>
+        <div class="pf-step"><span class="pf-step-num">5</span><div class="pf-step-body"><div class="pf-step-activity">Blend 45 seconds straight</div><div class="pf-step-desc">One continuous run beats pulsing every time. Let it go the full 45 sec without stopping.</div></div></div>
+      </div>
+    </div>
+    <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Plan tomorrow — name one specific task</div><div class="habit-why">What's the first thing you'll do when you sit down tomorrow? Write it.</div></div><span class="tag tag-blue">Mind</span></div>
+    <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">In bed by 11pm — no laptop, no TV in bed</div><div class="habit-why">Phone is already in kitchen. Bedroom is for sleep only.</div></div><span class="tag tag-red">Critical</span></div>
+
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+      <button class="reset-btn" style="margin-bottom:0;" onclick="resetAll()">Reset today's habits</button>
+      <button id="autosave-btn" onclick="setupFileAccess()" style="font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;">💾 Enable auto-save</button>
+      <span id="save-indicator" style="font-size:11px;color:var(--green);opacity:0;transition:opacity 0.4s;"></span>
+    </div>
+
+    <div class="score-guide">
+      <div class="sg-item"><div class="sg-num score-elite">85–100%</div><div class="sg-label">Elite day</div></div>
+      <div class="sg-item"><div class="sg-num score-good">70–84%</div><div class="sg-label">Strong day</div></div>
+      <div class="sg-item"><div class="sg-num score-avg">50–69%</div><div class="sg-label">Average day</div></div>
+      <div class="sg-item"><div class="sg-num score-low">0–49%</div><div class="sg-label">Below baseline</div></div>
+    </div>
+  </div>
+
+  <!-- Daily Habit Log -->
+  <div class="card">
+    <div class="hlog-toggle" onclick="toggleHlog()">
+      <div>
+        <div class="card-title" style="margin-bottom:2px;">Daily habit log</div>
+        <div style="font-size:11px; color:var(--text3);" id="hlog-summary">Loading...</div>
+      </div>
+      <span class="hlog-chevron" id="hlog-chevron">▼</span>
+    </div>
+    <div class="hlog-body" id="hlog-body">
+      <div class="hlog-row hlog-head">
+        <span>Date</span><span>Day</span><span>Score</span><span>Result</span>
+      </div>
+      <div id="hlog-list"></div>
+    </div>
+  </div>
+
+  <div class="card office-only">
+    <div class="card-title">Office day schedule (Mon–Fri)</div>
+    <div class="sched-row"><span class="sched-time">6:15am</span><div class="sched-block sb-wake"><strong>Wake up.</strong> No snooze. Water immediately. Creatine + Vitamin D.</div></div>
+    <div class="sched-row" style="margin-top:3px;"><span class="sched-time">6:20am</span><div class="sched-block sb-wake">Shower, dress, grab packed lunch + smoothie from fridge.</div></div>
+    <div class="sched-row" style="margin-top:3px;"><span class="sched-time">7:10am</span><div class="sched-block sb-work"><strong>Leave for office.</strong> Podcast or music — not news, not Instagram.</div></div>
+    <div class="sched-row" style="margin-top:3px;"><span class="sched-time">7:45am</span><div class="sched-block sb-reward"><span class="reward-medal">🥇</span><strong>Reward:</strong> Starbucks coffee. You showed up — you earned it.</div></div>
+    <div class="sched-row" style="margin-top:3px;"><span class="sched-time">8:00am</span><div class="sched-block sb-work"><strong>At desk.</strong> Name today's first task before opening email. 2-min rule. Start.</div></div>
+    <div class="sched-row" style="margin-top:3px;"><span class="sched-time">8–12pm</span><div class="sched-block sb-work">Deep work + meetings. Ask one question. Financial modeling 30 min.</div></div>
+    <div class="sched-row" style="margin-top:3px;"><span class="sched-time">12:30pm</span><div class="sched-block sb-food">Packed lunch. Away from screen. Water bottle 3.</div></div>
+    <div class="sched-row" style="margin-top:3px;"><span class="sched-time">1–5pm</span><div class="sched-block sb-work">Afternoon work block + meetings.</div></div>
+    <div class="sched-row" style="margin-top:3px;"><span class="sched-time">6:15pm</span><div class="sched-block sb-gym">Leave work. Pelvic floor protocol — hot tub → all 6 exercises → wand work. Then walk to gym (no AirPods). 2mi run + upper body lifts.</div></div>
+    <div class="sched-row" style="margin-top:3px;"><span class="sched-time">8:30pm</span><div class="sched-block sb-food">Walk home. Dinner at table — not while scrolling. Knock out a personal task on laptop.</div></div>
+    <div class="sched-row" style="margin-top:3px;"><span class="sched-time">10:45pm</span><div class="sched-block sb-wind"><strong>Phone in kitchen.</strong> Lumosity — complete daily 5 game goal. Magnesium glycinate. Wind down.</div></div>
+    <div class="sched-row" style="margin-top:3px;"><span class="sched-time">11:00pm</span><div class="sched-block sb-sleep">Sleep. No devices in bedroom.</div></div>
+  </div>
+
+  <div class="card dayoff-only">
+    <div class="card-title">Day off schedule — holiday / weekend</div>
+    <div class="sched-row"><span class="sched-time">7:00am</span><div class="sched-block sb-wake"><strong>Wake up.</strong> No snooze. Water immediately. Creatine + Vitamin D. Lumosity first.</div></div>
+    <div class="sched-row" style="margin-top:3px;"><span class="sched-time">7:30am</span><div class="sched-block sb-wake">Shower, get dressed (don't stay in pajamas — signals your brain it's a real day).</div></div>
+    <div class="sched-row" style="margin-top:3px;"><span class="sched-time">8:00am</span><div class="sched-block sb-food">Blend smoothie. Real breakfast. Not scrolling.</div></div>
+    <div class="sched-row" style="margin-top:3px;"><span class="sched-time">9:00am</span><div class="sched-block sb-work"><strong>2-hour work block.</strong> Financial modeling, open work tasks, or emails. Use 2-min rule to start. No YouTube. No social media. Just the block.</div></div>
+    <div class="sched-row" style="margin-top:3px;"><span class="sched-time">11:00am</span><div class="sched-block sb-food"><strong>Block complete.</strong> Day is yours. Lunch, errands, friends, whatever — guilt-free.</div></div>
+    <div class="sched-row" style="margin-top:3px;"><span class="sched-time">Afternoon</span><div class="sched-block sb-pf"><strong>Pelvic floor protocol.</strong> Hot tub → all 6 exercises → wand work. Full protocol. No shortcuts.</div></div>
+    <div class="sched-row" style="margin-top:3px;"><span class="sched-time">Late afternoon</span><div class="sched-block sb-gym">Walk to gym (no AirPods). 2mi run + upper body lifts. Walk home (no AirPods).</div></div>
+    <div class="sched-row" style="margin-top:3px;"><span class="sched-time">Evening</span><div class="sched-block sb-food">Dinner at table. Before 8:30pm. No scrolling.</div></div>
+    <div class="sched-row" style="margin-top:3px;"><span class="sched-time">10:45pm</span><div class="sched-block sb-wind"><strong>Phone in kitchen.</strong> Magnesium glycinate. Wind down. No laptop in bed.</div></div>
+    <div class="sched-row" style="margin-top:3px;"><span class="sched-time">11:00pm</span><div class="sched-block sb-sleep">Sleep. No devices in bedroom.</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════ SYSTEM TAB ═══════════════ -->
+<div class="page" id="tab-system">
+  <div class="section-header"><h1>My System</h1><p>The rules, priorities, and patterns that run your life.</p></div>
+
+  <div class="non-neg">
+    <div class="non-neg-title">The 6 non-negotiables — every single day</div>
+    <div class="non-neg-item"><span class="non-neg-num">1</span>Phone in kitchen by 10:45pm</div>
+    <div class="non-neg-item"><span class="non-neg-num">2</span>Wake up — do not go back to bed</div>
+    <div class="non-neg-item"><span class="non-neg-num">3</span>Office by 8:00am on work days</div>
+    <div class="non-neg-item"><span class="non-neg-num">4</span>Full pelvic floor protocol — hot tub + all 6 + wand</div>
+    <div class="non-neg-item"><span class="non-neg-num">5</span>No masturbation</div>
+    <div class="non-neg-item"><span class="non-neg-num">6</span>In bed by 11pm — no devices</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Priority stack</div>
+    <div class="priority-row"><div class="p-num">P1</div><div><span class="tag tag-red">Critical</span><div class="info-text" style="margin-top:4px;">Office by 8am — every work day, no exceptions</div><div class="info-sub">Management warning is active. This is the job-saving move.</div></div></div>
+    <div class="priority-row"><div class="p-num">P2</div><div><span class="tag tag-red">Critical</span><div class="info-text" style="margin-top:4px;">Pelvic floor recovery — full protocol, 5x+ per week</div><div class="info-sub">4 years. 17% compliance. The most important health goal.</div></div></div>
+    <div class="priority-row"><div class="p-num">P3</div><div><span class="tag tag-red">Critical</span><div class="info-text" style="margin-top:4px;">Phone in kitchen by 10:45pm — non-negotiable</div><div class="info-sub">This single habit fixes sleep, morning, and everything downstream.</div></div></div>
+    <div class="priority-row"><div class="p-num">P4</div><div><span class="tag tag-amber">High</span><div class="info-text" style="margin-top:4px;">Financial modeling — 30 min daily</div><div class="info-sub">Closes the skill gap. Reduces imposter syndrome. Saves the job.</div></div></div>
+    <div class="priority-row"><div class="p-num">P5</div><div><span class="tag tag-amber">High</span><div class="info-text" style="margin-top:4px;">Imposter syndrome + work confidence</div><div class="info-sub">Ask questions. Show up. Stop performing. Start becoming.</div></div></div>
+    <div class="priority-row"><div class="p-num">P6</div><div><span class="tag tag-blue">Active</span><div class="info-text" style="margin-top:4px;">Physical + appearance + Instagram</div><div class="info-sub">Gym habit protected. Arms goal. Hairline (natural). Aesthetic page.</div></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Weekly rhythm</div>
+    <div class="week-grid">
+      <div class="day-col"><div class="day-name" style="color:var(--red);">Mon ⚑</div><div class="day-item">Office 8am</div><div class="day-item">Deep work</div><div class="day-item">Ask a Q</div><div class="day-item">PF protocol</div><div class="day-item">Gym</div></div>
+      <div class="day-col"><div class="day-name">Tue</div><div class="day-item">Office 8am</div><div class="day-item">Fin. modeling</div><div class="day-item">PF protocol</div><div class="day-item">Gym</div></div>
+      <div class="day-col"><div class="day-name">Wed</div><div class="day-item">Office 8am</div><div class="day-item">Deep work</div><div class="day-item">PF protocol</div><div class="day-item">Gym</div></div>
+      <div class="day-col"><div class="day-name">Thu</div><div class="day-item">Office 8am</div><div class="day-item">Fin. modeling</div><div class="day-item">PF protocol</div><div class="day-item">Gym</div></div>
+      <div class="day-col"><div class="day-name">Fri</div><div class="day-item">Office 8am</div><div class="day-item">Weekly review</div><div class="day-item">PF protocol</div><div class="day-item">Plan weekend</div></div>
+      <div class="day-col"><div class="day-name">Sat</div><div class="day-item">Grocery 8am</div><div class="day-item">Friends/social</div><div class="day-item">Gym</div><div class="day-item">PF protocol</div></div>
+      <div class="day-col sunday"><div class="day-name" style="color:var(--red);">Sun ⚑</div><div class="day-item">Sunday reset</div><div class="day-item">Meal prep</div><div class="day-item">Plan week</div><div class="day-item">Gym</div><div class="day-item">Phone 10:45pm</div></div>
+    </div>
+    <p style="font-size:11px; color:var(--text3); margin-top:10px;">Sunday is marked critical — it sets the entire week. Win Sunday evening, win Monday morning.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">The dopamine escape menu — know your triggers</div>
+    <div class="info-row" style="padding-top:0;"><div class="info-row-tag"><span class="tag tag-red">Escape</span></div><div><div class="info-text">Doomscrolling</div><div class="info-sub">Trigger: any discomfort or boredom. Cost: time + sleep.</div></div></div>
+    <div class="info-row"><div class="info-row-tag"><span class="tag tag-red">Escape</span></div><div><div class="info-text">Masturbation</div><div class="info-sub">Trigger: restlessness, anxiety. Cost: pelvic floor tension + focus.</div></div></div>
+    <div class="info-row"><div class="info-row-tag"><span class="tag tag-red">Escape</span></div><div><div class="info-text">Impulse shopping (Amazon, coffee makers, pillows)</div><div class="info-sub">Trigger: discomfort with self. Cost: money + $100k goal.</div></div></div>
+    <div class="info-row"><div class="info-row-tag"><span class="tag tag-amber">Escape</span></div><div><div class="info-text">Taking a bath during work hours</div><div class="info-sub">Trigger: threatening work task. Cost: productivity + job.</div></div></div>
+    <div class="info-row"><div class="info-row-tag"><span class="tag tag-amber">Escape</span></div><div><div class="info-text">Dating app binges (1hr Tinder/Hinge, delete next day)</div><div class="info-sub">Trigger: loneliness or restlessness. Same binge/purge cycle.</div></div></div>
+    <div class="insight-box" style="margin-top:12px;"><p>These are not five problems. They are one problem — an inability to sit with discomfort — expressed in five currencies. The fix is building distress tolerance, not attacking each behavior separately.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">The 2-minute task start rule</div>
+    <p style="font-size:13px; color:var(--text2); line-height:1.7;">When you sit down and feel paralyzed: write down the single next <em>physical</em> action. Not "work on the model" — but "open the Excel file and type the revenue assumption in cell B4." Then do only that. Two minutes. You are not committing to finishing. You are committing to one tiny, non-threatening action. Once started, initiation anxiety drops ~80%.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Sunday reset protocol</div>
+    <div class="info-row" style="padding-top:0;"><div class="info-row-tag" style="min-width:65px; font-size:12px; font-weight:600; color:var(--text2);">2:00pm</div><div><div class="info-text">Weekly review — 20 min</div><div class="info-sub">3 wins from last week. 3 most important tasks this week. Name Monday's first task specifically.</div></div></div>
+    <div class="info-row"><div class="info-row-tag" style="min-width:65px; font-size:12px; font-weight:600; color:var(--text2);">5:00pm</div><div><div class="info-text">Gym — non-negotiable on Sundays</div><div class="info-sub">Burns cortisol. Anxiety management for the week ahead.</div></div></div>
+    <div class="info-row"><div class="info-row-tag" style="min-width:65px; font-size:12px; font-weight:600; color:var(--text2);">7:00pm</div><div><div class="info-text">Prepare Monday morning completely</div><div class="info-sub">Outfit laid out. Bag packed. Know exactly where you're going and what you're doing first.</div></div></div>
+    <div class="info-row"><div class="info-row-tag" style="min-width:65px; font-size:12px; font-weight:600; color:var(--text2);">10:45pm</div><div><div class="info-text">Phone in kitchen — especially on Sunday</div><div class="info-sub">Sunday night scrolling is the mechanism turning normal tension into full anxiety spirals.</div></div></div>
+  </div>
+</div>
+
+<!-- ═══════════════ GOALS TAB ═══════════════ -->
+<div class="page" id="tab-goals">
+  <div class="section-header"><h1>Goals & vision</h1><p>Where you're going and how you get there.</p></div>
+
+  <div class="card">
+    <div class="card-title">Tom at 35 — the target</div>
+    <div class="vision-grid">
+      <div class="v-item"><div class="v-label">Location</div><div class="v-val">Washington DC — large apartment</div></div>
+      <div class="v-item"><div class="v-label">Income</div><div class="v-val">$300k/yr — own firm</div></div>
+      <div class="v-item"><div class="v-label">Relationship</div><div class="v-val">Serious, committed by age 34</div></div>
+      <div class="v-item"><div class="v-label">Body</div><div class="v-val">Great shape, pelvic floor recovered</div></div>
+      <div class="v-item"><div class="v-label">Work style</div><div class="v-val">Client-facing, personable, trusted</div></div>
+      <div class="v-item"><div class="v-label">Social</div><div class="v-val">Country club, close friends, weekends out</div></div>
+      <div class="v-item"><div class="v-label">Firm type</div><div class="v-val">Hospitality / customer experience consulting</div></div>
+      <div class="v-item"><div class="v-label">Feeling</div><div class="v-val">Whole. Busy but fulfilled. Not anxious.</div></div>
+    </div>
+    <div class="insight-box" style="margin-top:12px;"><p>M&A consulting is the launchpad, not the destination. Stay long enough to get promoted to Manager, build financial literacy and a track record. Then pivot to hospitality/CX consulting — a real, well-paid field that plays to your actual strengths: personability, aesthetic eye, client relationships. The modeling you've been avoiding isn't your career. It's your entry ticket.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Age milestones — the roadmap to 35</div>
+    <p style="font-size:12px; color:var(--text2); margin-bottom:14px; line-height:1.6;">Each year has a theme and specific targets. This isn't wishful thinking — these are the logical outcomes of executing the system you just built.</p>
+    <div class="age-milestone-grid">
+
+      <!-- AGE 29 -->
+      <div class="age-card age-card-29">
+        <div class="age-badge age-badge-29">29</div>
+        <div class="age-label age-label-29">The Stabilization Year</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--red);"></div><strong>Management warning fully resolved</strong> — showing up, delivering, no longer a liability.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--red);"></div><strong>Pelvic floor pain reduced by 70%+</strong> — consistent protocol means progress is measurable by now.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--amber);"></div><strong>CC debt eliminated</strong> — $12k gone. Net worth now matches asset number. This happens this year.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--amber);"></div><strong>$80–90k in assets</strong> — CC cleared early in the year, then $2,500/month into savings. You're well ahead of pace.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--amber);"></div><strong>Financial modeling: competent</strong> — can build a basic 3-statement model without Googling every step.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--amber);"></div><strong>Psychiatrist + therapy active</strong> — not in crisis mode, using both proactively.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--green);"></div><strong>Phone screen time under 3 hrs/day</strong> — the dopamine escapes are managed, not controlling you.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--green);"></div><strong>Body: arms visibly developed</strong> — gym habit locked in, body reflects the consistency.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--purple);"></div><strong>Feeling emotions again</strong> — therapy + system change means the numbness is starting to lift.</div>
+        <div style="margin-top:12px; padding:10px; background:rgba(186,117,23,0.1); border-radius:6px; font-size:11px; color:var(--amber-dark); line-height:1.6;"><strong>The identity shift at 29:</strong> You stop performing and start becoming. People around you notice you've changed — not because you announced it, but because you show up.</div>
+      </div>
+
+      <!-- AGE 30 -->
+      <div class="age-card age-card-30">
+        <div class="age-badge age-badge-30">30</div>
+        <div class="age-label age-label-30">The Arrival Year</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--red);"></div><strong>$120,000 in assets</strong> — zero CC debt, clean balance sheet. This is the number that proves the impulse control was worth it.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--red);"></div><strong>Pelvic floor: fully managed or resolved</strong> — 4+ years of pain with a clear resolution trajectory. No longer runs your life.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--amber);"></div><strong>Promoted to Manager or on clear path</strong> — financial modeling skill + office presence + confidence = visible promotion candidate.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--amber);"></div><strong>Actively networking in CX consulting</strong> — attending events, LinkedIn presence, 3–5 informational interviews in hospitality/CX consulting world.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--amber);"></div><strong>Confident at work — genuinely</strong> — imposter syndrome present but managed. Ask questions because you want to learn, not to perform learning.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--green);"></div><strong>Instagram aesthetic page active</strong> — curated, consistent, reflects who you actually are at 30.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--green);"></div><strong>In a relationship or actively dating with confidence</strong> — pelvic floor is managed, emotional availability is open, anxiety is lower.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--blue);"></div><strong>Investing meaningfully</strong> — not just saving, but growing: index funds, Roth IRA maxed, maybe first alternative investment.</div>
+        <div style="margin-top:12px; padding:10px; background:rgba(55,138,221,0.12); border-radius:6px; font-size:11px; color:var(--blue-dark); line-height:1.6;"><strong>The identity shift at 30:</strong> The gap between who you are and who you pretend to be is closed. You're not faking it. You turned 30 with $120k in assets, zero CC debt, a recovered body, a real skill set, and you actually feel things again.</div>
+      </div>
+
+      <!-- AGE 31 -->
+      <div class="age-card age-card-31">
+        <div class="age-badge age-badge-31">31</div>
+        <div class="age-label age-label-31">The Momentum Year</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--red);"></div><strong>$145k–$160k in assets</strong> — $120k from 30, plus $2,500–3,000/month with no CC drag and investment returns compounding.</div></div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--red);"></div><strong>Career pivot underway or decided</strong> — either: (A) promoted at current firm with CX transition plan, or (B) first CX consulting role lined up. No more drifting.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--amber);"></div><strong>Serious relationship</strong> — emotionally available, pelvic floor non-issue, body confident. Not "looking" — actually building something.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--amber);"></div><strong>Firm concept sketched out</strong> — name, niche, service offering. Not launched yet — but the blueprint exists. You know what you're building toward.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--amber);"></div><strong>Work output: 4–5 hrs/day real work</strong> — not 50 minutes. You are actually good at this job now. The gap is closed.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--green);"></div><strong>Emotional range fully restored</strong> — you cried. You got angry. You felt in love. The blunting is gone. Therapy worked.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--green);"></div><strong>DC life taking shape</strong> — social network, neighborhood you love, country club membership on horizon, weekends filled intentionally.</div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--teal);"></div><strong>Body: best shape of your life</strong> — 3 consistent years of gym + nutrition + sleep. It's visible and you feel it.</div>
+        <div style="margin-top:12px; padding:10px; background:rgba(99,153,34,0.12); border-radius:6px; font-size:11px; color:var(--green-dark); line-height:1.6;"><strong>The identity shift at 31:</strong> You are no longer becoming. You are. The 28-year-old version of you would barely recognize this life — not because everything is perfect, but because you actually built it on purpose.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Financial roadmap</div>
+    <div class="bar-row"><div class="bar-meta"><span>Total assets</span><span style="color:var(--blue); font-weight:600;">$61,091</span></div><div class="bar-track"><div class="bar-fill" style="width:51%; background:var(--blue);"></div></div></div>
+    <div class="bar-row"><div class="bar-meta"><span>Credit card debt</span><span style="color:var(--red); font-weight:600;">−$12,000</span></div><div class="bar-track"><div class="bar-fill" style="width:10%; background:var(--red);"></div></div></div>
+    <div class="bar-row"><div class="bar-meta"><span>Net worth (assets − CC debt)</span><span style="color:var(--purple); font-weight:600;">$49,091</span></div><div class="bar-track"><div class="bar-fill" style="width:41%; background:var(--purple);"></div></div></div>
+    <div class="bar-row" style="margin-top:6px;"><div class="bar-meta"><span>Target: $120k assets by age 30</span><span style="color:var(--green); font-weight:600;">$120,000</span></div><div class="bar-track"><div class="bar-fill" style="width:100%; background:var(--green);"></div></div></div>
+    <div class="bar-row"><div class="bar-meta"><span>Gap to close (assets to target)</span><span style="color:var(--amber); font-weight:600;">$58,909</span></div><div class="bar-track"><div class="bar-fill" style="width:49%; background:var(--amber);"></div></div></div>
+    <div style="background:var(--red-bg); border-radius:var(--radius-sm); padding:12px 14px; margin-top:12px;">
+      <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--red-dark); margin-bottom:6px;">CC debt is priority #1 before anything else</div>
+      <div style="font-size:12px; color:var(--red-dark); line-height:1.8;">At 20–29% APR, that $12k is costing you ~$2,400–$3,500/year in interest alone — money that evaporates and never compounds. <strong>Step 1:</strong> Stop adding to the balance — no impulse purchases on credit. <strong>Step 2:</strong> Pay $1,000–1,500/month toward CC balance until it's gone (~8–12 months). <strong>Step 3:</strong> Once cleared, redirect that payment entirely to savings. The $120k goal becomes much more achievable with no CC drag.</div>
+    </div>
+    <p style="font-size:12px; color:var(--text2); margin-top:10px; line-height:1.6;">Path to $120k: Pay off CC first (~$12k over 10 months), then save aggressively. With CC gone, you can save $2,500–3,000/month on your take-home. That closes the $59k gap in ~20–24 months — right on schedule for age 30.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Gap map — now vs. target</div>
+    <div class="gap-row"><span>Work output per day</span><span class="gap-now">~50 min</span><span class="gap-arrow">→</span><span class="gap-target">4–5 hrs</span></div>
+    <div class="gap-row"><span>Pelvic floor compliance</span><span class="gap-now">17%</span><span class="gap-arrow">→</span><span class="gap-target">100% daily</span></div>
+    <div class="gap-row"><span>Total assets</span><span class="gap-now">$61,091</span><span class="gap-arrow">→</span><span class="gap-target">$120k by 30</span></div>
+    <div class="gap-row"><span>Net worth (assets − CC debt)</span><span class="gap-now">$49,091</span><span class="gap-arrow">→</span><span class="gap-target">$108k+ by 30</span></div>
+    <div class="gap-row"><span>Credit card balance</span><span class="gap-now" style="color:var(--red);">$12,000</span><span class="gap-arrow">→</span><span class="gap-target">$0 — eliminate first</span></div>
+    <div class="gap-row"><span>Office arrival</span><span class="gap-now">Noon (3 days)</span><span class="gap-arrow">→</span><span class="gap-target">8am (5 days)</span></div>
+    <div class="gap-row"><span>Financial modeling skill</span><span class="gap-now">Avoided</span><span class="gap-arrow">→</span><span class="gap-target">Competent in 6 months</span></div>
+    <div class="gap-row"><span>Phone screen time</span><span class="gap-now">6.5 hrs/day</span><span class="gap-arrow">→</span><span class="gap-target">&lt;2 hrs/day</span></div>
+    <div class="gap-row"><span>Pelvic floor wand work</span><span class="gap-now">1x / 2 weeks</span><span class="gap-arrow">→</span><span class="gap-target">2x per week</span></div>
+    <div class="gap-row"><span>Water intake</span><span class="gap-now">3 cups</span><span class="gap-arrow">→</span><span class="gap-target">8 cups daily</span></div>
+    <div class="gap-row"><span>Text response time (saved contacts)</span><span class="gap-now" id="avg-response-display">~20–30 min avg</span><span class="gap-arrow">→</span><span class="gap-target">Under 5 min</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Text response time tracker — saved contacts only</div>
+    <p style="font-size:12px; color:var(--text2); line-height:1.6; margin-bottom:14px;">Goal: respond to texts from saved contacts within <strong>5 minutes</strong>. Baseline analyzed from iMessage history — ~20–30 min avg with a binary pattern (lightning fast when engaged, silent when distracted). Log your daily self-assessed response speed below and track improvement week over week.</p>
+
+    <div class="kpi-row" style="margin-bottom:14px;">
+      <div class="kpi"><div class="kpi-val" id="resp-baseline" style="color:var(--amber);">~25 min</div><div class="kpi-label">Baseline avg</div></div>
+      <div class="kpi"><div class="kpi-val" id="resp-this-week" style="color:var(--text3);">—</div><div class="kpi-label">This week avg</div></div>
+      <div class="kpi"><div class="kpi-val" id="resp-best" style="color:var(--green);">—</div><div class="kpi-label">Best day</div></div>
+      <div class="kpi"><div class="kpi-val" style="color:var(--blue-dark);">5 min</div><div class="kpi-label">Target</div></div>
+    </div>
+
+    <div style="margin-bottom:12px;">
+      <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text3); margin-bottom:8px;">Log today's response speed</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="filter-btn" onclick="logResponse('under2')" id="resp-under2">🟢 Under 2 min</button>
+        <button class="filter-btn" onclick="logResponse('under5')" id="resp-under5">🟡 2–5 min</button>
+        <button class="filter-btn" onclick="logResponse('under15')" id="resp-under15">🟠 5–15 min</button>
+        <button class="filter-btn" onclick="logResponse('over15')" id="resp-over15">🔴 15+ min / missed</button>
+      </div>
+    </div>
+
+    <div id="resp-log-list" style="font-size:12px; color:var(--text2); line-height:1.8;"></div>
+
+    <!-- Response time line chart -->
+    <div id="resp-chart-wrap" style="display:none; margin-top:18px;">
+      <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text3); margin-bottom:10px;">Daily response time — progress chart</div>
+      <div style="position:relative; height:200px;">
+        <canvas id="resp-chart"></canvas>
+      </div>
+      <div style="display:flex; gap:16px; margin-top:8px; font-size:11px; color:var(--text2);">
+        <span style="display:flex; align-items:center; gap:5px;"><span style="display:inline-block; width:16px; height:3px; background:#378ADD; border-radius:2px;"></span>Your avg</span>
+        <span style="display:flex; align-items:center; gap:5px;"><span style="display:inline-block; width:16px; height:2px; background:#BA7517; border-radius:2px; border-top: 2px dashed #BA7517;"></span>Baseline (~25 min)</span>
+        <span style="display:flex; align-items:center; gap:5px;"><span style="display:inline-block; width:16px; height:2px; background:#639922; border-radius:2px; border-top: 2px dashed #639922;"></span>Target (5 min)</span>
+      </div>
+    </div>
+
+    <div style="background:var(--blue-bg); border-radius:var(--radius-sm); padding:12px 14px; margin-top:12px;">
+      <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--blue-dark); margin-bottom:6px;">Why this matters</div>
+      <div style="font-size:12px; color:var(--blue-dark); line-height:1.7;">Responding quickly to saved contacts = you're present, not checked out. Late replies are often a sign of phone avoidance (ironic given screen time goals) or social anxiety. Sub-5-min responses to people who matter signals that you're engaged in your relationships — a key part of who Tom at 35 is.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">90-day execution plan</div>
+    <div class="ninety-grid">
+      <div class="phase-card"><div class="phase-title" style="color:var(--red);">Phase 1 — Days 1–30</div><div class="phase-sub">Foundation. Stop the bleeding.</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--red);"></div>Phone in kitchen every night 10:45pm</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--red);"></div>Delete 6:30am alarm. One alarm: 6:15am.</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--red);"></div>Office every workday by 8am</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--red);"></div>Full PF protocol daily — hot tub first</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--amber);"></div>Lumosity — complete daily 5 game goal (evening)</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--amber);"></div>Creatine + Vitamin D + Magnesium daily</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--amber);"></div>No impulse purchases — 30-day freeze</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--green);"></div>Sunday reset ritual every week</div>
+      </div>
+      <div class="phase-card"><div class="phase-title" style="color:var(--amber);">Phase 2 — Days 31–60</div><div class="phase-sub">Build. Close the gaps.</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--red);"></div>30 min financial modeling daily</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--red);"></div>Ask 1 question at work every day</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--amber);"></div>Book psychiatrist appointment</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--amber);"></div>Finish dinner before 9:15pm — not while scrolling</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--amber);"></div>8 cups water daily — tracked</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--green);"></div>Pack lunch every workday</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--green);"></div>Plan and book one trip</div>
+      </div>
+      <div class="phase-card"><div class="phase-title" style="color:var(--green);">Phase 3 — Days 61–90</div><div class="phase-sub">Momentum. Identity shift.</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--red);"></div>Review PF progress with PT</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--red);"></div>Can you build a basic model now?</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--amber);"></div>Re-engage therapy — 1 session min</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--amber);"></div>Savings check — on track for $100k?</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--amber);"></div>Work check — management warning improving?</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--green);"></div>Visible arm progress at gym?</div>
+        <div class="phase-item"><div class="phase-dot" style="background:var(--green);"></div>Does life feel different? Score yourself.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ NUTRITION TAB ═══════════════ -->
+<div class="page" id="tab-nutrition">
+  <div class="section-header"><h1>Nutrition system</h1><p>Built for muscle gain, pelvic floor recovery, blood flow, and taste.</p></div>
+
+  <div class="card">
+    <div class="card-title">Weekly grocery run — Saturday 8:00–8:30am</div>
+    <p style="font-size:12px; color:var(--text2); margin-bottom:12px; line-height:1.6;">Shop Saturday morning (least crowded time). Store groceries. Sunday: 90-min meal prep — cook everything, portion 5 lunches, make 5 smoothie freezer packs. Click items to check off your list.</p>
+    <div class="grocery-grid">
+      <div class="g-section"><div class="g-label">Proteins</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Salmon fillets (1 lb)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Ground turkey (1.5 lbs)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Chicken breasts (1.5 lbs)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Eggs (1 dozen)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Greek yogurt plain (large tub)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Green lentils (1 bag)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Black beans (2 cans)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Protein powder (if needed)</div>
+      </div>
+      <div class="g-section"><div class="g-label">Produce</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Baby spinach (large bag)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Broccoli (1 head)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Asparagus (1 bunch)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Sweet potatoes (3–4)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Arugula (small bag)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Bananas (5–6)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Avocados (3)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Lemons (3) + fresh ginger</div>
+      </div>
+      <div class="g-section"><div class="g-label">Frozen + pantry</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Frozen blueberries — large bag (Organic 365 / Whole Foods Brand)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Frozen mixed berries (Organic 365 / Whole Foods Brand)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Pre-cooked beets (vacuum packed)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Brown rice (1 bag)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Farro (1 bag)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Rolled oats</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Walnuts + almonds (mixed bag)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Ground flaxseed + pumpkin seeds</div>
+      </div>
+      <div class="g-section"><div class="g-label">Fridge staples</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Almond milk (2 cartons)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Pomegranate juice (small bottle)</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Goat cheese + feta</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Hummus</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Extra virgin olive oil</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Salsa + whole wheat wraps</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Peanut butter + almond butter</div>
+        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Turmeric + black pepper</div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="page-section">Packed lunches — Mon through Fri</h2>
+
+  <!-- 1. LEAST MESSY -->
+  <div class="meal"><div class="meal-name">🟢 Lemon herb salmon + roasted asparagus</div><div class="meal-pills"><span class="meal-pill">~45g protein</span><span class="meal-pill">~500 cal</span><span class="meal-pill">Reheats: excellent</span><span class="meal-pill">🟢 Low mess</span><span class="meal-pill">🧹 Cleanup: ~5 min</span></div><div class="meal-pf">Salmon = omega-3 + nerve health · Asparagus = anti-inflammatory</div><div class="meal-body">
+  <details style="margin-top:4px;">
+    <summary style="cursor:pointer; font-size:12px; font-weight:600; color:var(--text2); user-select:none;">📋 Directions (~20 min)</summary>
+    <ul style="margin:8px 0 0 0; padding-left:16px; line-height:1.9;">
+      <li><strong>Dishes:</strong> 1 sheet pan, paper towels, knife, cutting board (lemon only)</li>
+      <li>Preheat oven to 400°F. Lightly oil the sheet pan.</li>
+      <li>Toss asparagus in olive oil, salt, and pepper. Spread on sheet pan.</li>
+      <li><strong>Minute 0</strong> — asparagus goes in.</li>
+      <li>Pat salmon bone dry with paper towels. Season with salt, pepper, and herbs (dill or parsley). Place skin-side down on same pan.</li>
+      <li><strong>Minute 3</strong> — salmon goes in. Skin-side down, do not flip.</li>
+      <li><strong>Minute 8</strong> — flip asparagus for even browning. Leave salmon alone.</li>
+      <li><strong>Minute 15</strong> — both come out. Salmon done when it flakes easily and center is just opaque.</li>
+      <li>Squeeze lemon over both immediately. Serve.</li>
+      <li><strong>Cleanup:</strong> Rinse 1 sheet pan, toss paper towels. Done in ~5 min.</li>
+    </ul>
+  </details>
+  <details style="margin-top:6px;">
+    <summary style="cursor:pointer; font-size:12px; font-weight:600; color:var(--text2); user-select:none;">💡 Tips for extra crispy</summary>
+    <div style="margin-top:8px;">
+      <div style="font-size:12px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">Asparagus</div>
+      <ul style="margin:0 0 10px 0; padding-left:16px; font-size:12px; line-height:1.8; color:var(--text2);">
+        <li>Dry it completely before oiling — moisture is the enemy of crisp</li>
+        <li>Use 425°F instead of 400°F for more caramelization</li>
+        <li>Single layer, spears not touching — don't crowd the pan</li>
+        <li>Just enough olive oil to coat, not soak</li>
+        <li>Last 2 minutes, switch to broil</li>
+      </ul>
+      <div style="font-size:12px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">Salmon</div>
+      <ul style="margin:0; padding-left:16px; font-size:12px; line-height:1.8; color:var(--text2);">
+        <li>Pat it bone dry before seasoning — biggest impact</li>
+        <li>Let it sit uncovered in the fridge 10–15 min after seasoning to dry the surface</li>
+        <li>Lightly brush the top with olive oil or mayo (mayo sounds weird, creates an incredible crust)</li>
+        <li>Last 2 minutes, switch to broil same as the asparagus</li>
+      </ul>
+    </div>
+  </details>
+</div></div>
+
+  <!-- 2. -->
+  <div class="meal"><div class="meal-name">🟡 Egg + spinach + feta wrap with hummus + walnuts</div><div class="meal-pills"><span class="meal-pill">~35g protein</span><span class="meal-pill">~480 cal</span><span class="meal-pill">Reheats: good</span><span class="meal-pill">🟡 Light mess</span><span class="meal-pill">🧹 Cleanup: ~8 min</span></div><div class="meal-pf">Eggs = B vitamins + nerve health · Spinach = magnesium · Walnuts = omega-3 + blood flow</div><div class="meal-body">
+  <details style="margin-top:4px;">
+    <summary style="cursor:pointer; font-size:12px; font-weight:600; color:var(--text2); user-select:none;">📋 Directions (~15 min)</summary>
+    <ul style="margin:8px 0 0 0; padding-left:16px; line-height:1.9;">
+      <li><strong>Dishes:</strong> 1 skillet, 1 mixing bowl, fork or whisk, spatula, foil wrap</li>
+      <li>Whisk 4 eggs with a pinch of salt and pepper in the mixing bowl.</li>
+      <li>Heat skillet over medium. Add a little butter or olive oil.</li>
+      <li>Add baby spinach first — wilt for 1 min.</li>
+      <li>Pour eggs over spinach. Scramble gently until just set — don't overcook.</li>
+      <li>Spread hummus on a whole wheat wrap. Add eggs and feta crumbles. Fold and wrap in foil.</li>
+      <li>Reheat at lunch: 45 sec in microwave wrapped in a damp paper towel.</li>
+      <li>Pack walnuts separately — add at lunch.</li>
+      <li><strong>Cleanup:</strong> 1 skillet, 1 bowl, 1 fork. ~8 min. Watch for egg residue — soak skillet right away.</li>
+    </ul>
+  </details>
+</div></div>
+
+  <!-- 3. -->
+  <div class="meal"><div class="meal-name">🟡 Ground turkey + black bean rice bowl + spinach + avocado</div><div class="meal-pills"><span class="meal-pill">~48g protein</span><span class="meal-pill">~550 cal</span><span class="meal-pill">Reheats: great</span><span class="meal-pill">🟡 Moderate mess</span><span class="meal-pill">🧹 Cleanup: ~10 min</span></div><div class="meal-pf">Turkey = lean protein · Black beans = magnesium + fiber · Spinach = blood flow · Avocado = healthy fat</div><div class="meal-body">
+  <details style="margin-top:4px;">
+    <summary style="cursor:pointer; font-size:12px; font-weight:600; color:var(--text2); user-select:none;">📋 Directions (~30 min)</summary>
+    <ul style="margin:8px 0 0 0; padding-left:16px; line-height:1.9;">
+      <li><strong>Dishes:</strong> 1 saucepan (rice), 1 skillet (turkey), can opener, colander, cutting board, spatula, storage containers</li>
+      <li>Start rice first — 1 cup brown rice, 2 cups water, bring to boil, cover and simmer 20 min.</li>
+      <li>Heat skillet over medium-high. Add ground turkey, break apart with spatula. Cook 8–10 min until no pink remains. Expect grease splatter — have paper towels ready.</li>
+      <li>Season turkey with cumin, garlic powder, salt, pepper while cooking.</li>
+      <li>Drain and rinse black beans in colander.</li>
+      <li>Layer in containers: rice → turkey → black beans → baby spinach → salsa on top.</li>
+      <li>Do NOT pre-slice avocado — add it fresh at lunch.</li>
+      <li><strong>Cleanup:</strong> 1 saucepan, 1 greasy skillet, colander, cutting board. Wipe stovetop splatter. ~10 min.</li>
+    </ul>
+  </details>
+</div></div>
+
+  <!-- 4. -->
+  <div class="meal"><div class="meal-name">🟠 Grilled chicken breast + sweet potato + broccoli + olive oil</div><div class="meal-pills"><span class="meal-pill">~50g protein</span><span class="meal-pill">~480 cal</span><span class="meal-pill">Reheats: excellent</span><span class="meal-pill">🟠 Messy</span><span class="meal-pill">🧹 Cleanup: ~15 min</span></div><div class="meal-pf">Chicken = lean high protein · Sweet potato = potassium + anti-inflammatory · Broccoli = magnesium + antioxidants</div><div class="meal-body">
+  <details style="margin-top:4px;">
+    <summary style="cursor:pointer; font-size:12px; font-weight:600; color:var(--text2); user-select:none;">📋 Directions (~35 min)</summary>
+    <ul style="margin:8px 0 0 0; padding-left:16px; line-height:1.9;">
+      <li><strong>Dishes:</strong> 1 sheet pan, 1 grill pan, cutting board, chef's knife, mixing bowl (for tossing veg), tongs, meat thermometer, storage containers</li>
+      <li>Preheat oven to 425°F.</li>
+      <li>Cube sweet potato into 1-inch pieces (sticky — wash hands after). Toss in mixing bowl with olive oil, paprika, salt, pepper. Spread on sheet pan.</li>
+      <li><strong>Minute 0</strong> — sweet potato goes in.</li>
+      <li>Cut broccoli into florets. Toss in same bowl with olive oil, garlic, salt.</li>
+      <li><strong>Minute 10</strong> — add broccoli to sheet pan.</li>
+      <li>Season chicken breast with paprika, garlic, rosemary, salt, pepper. Heat grill pan over medium-high. Cook 6–7 min per side until internal temp hits 165°F. Expect smoke and grease splatter.</li>
+      <li><strong>Minute 25</strong> — everything done. Rest chicken 5 min before slicing.</li>
+      <li>Portion into containers. Drizzle olive oil over everything.</li>
+      <li><strong>Cleanup:</strong> Sheet pan, grill pan (most work — grill ridges hold grease), mixing bowl, cutting board, tongs. Wipe stovetop. ~15 min. Soak grill pan immediately.</li>
+    </ul>
+  </details>
+</div></div>
+
+  <!-- 5. MESSIEST -->
+  <div class="meal"><div class="meal-name">🔴 Beet + lentil salad + grilled chicken + goat cheese + walnuts</div><div class="meal-pills"><span class="meal-pill">~42g protein</span><span class="meal-pill">~510 cal</span><span class="meal-pill">No reheat needed</span><span class="meal-pill">🔴 Messiest</span><span class="meal-pill">🧹 Cleanup: ~20 min</span></div><div class="meal-pf">Beets = nitric oxide + blood flow · Lentils = magnesium + protein · Goat cheese = calcium</div><div class="meal-body">
+  <details style="margin-top:4px;">
+    <summary style="cursor:pointer; font-size:12px; font-weight:600; color:var(--text2); user-select:none;">📋 Directions (~35 min)</summary>
+    <ul style="margin:8px 0 0 0; padding-left:16px; line-height:1.9;">
+      <li><strong>Dishes:</strong> 1 saucepan (lentils), 1 grill pan (chicken), cutting board, chef's knife, colander, large mixing/salad bowl, tongs, gloves for beets, storage containers</li>
+      <li>Rinse 1 cup green lentils in colander. Simmer in saucepan with 2.5 cups salted water 20–25 min until tender. Drain and let cool.</li>
+      <li>⚠️ <strong>Wear gloves before touching beets</strong> — they permanently stain hands, cutting board, and counter. Slice pre-cooked beets over the sink or on a dark surface.</li>
+      <li>Season chicken breast with olive oil, salt, pepper, garlic powder. Grill on grill pan 6–7 min per side until internal temp hits 165°F. Rest 5 min, then slice.</li>
+      <li>Build bowls in containers: arugula → lentils → beets → sliced chicken → goat cheese crumbles → walnuts.</li>
+      <li>Drizzle with olive oil + balsamic. Store cold — no reheating needed.</li>
+      <li><strong>Cleanup:</strong> Saucepan, grill pan, colander, cutting board (likely stained pink), mixing bowl, gloves, counter wipe. ~20 min. Beet stains need immediate attention — hydrogen peroxide on cutting board if needed.</li>
+    </ul>
+  </details>
+</div></div>
+
+  <h2 class="page-section">Smoothie packs — make 5 on Sunday, blend fresh each morning</h2>
+  <p style="font-size:12px; color:var(--text2); margin-bottom:12px; line-height:1.6;"><strong>The rule:</strong> Never make smoothies ahead of time — they go flat and watery. Instead make freezer packs on Sunday (frozen fruit + spinach + seeds in a bag). Each morning: dump bag into blender + add almond milk + protein powder + blend 45 sec. Fresh, thick, done in 90 seconds.</p>
+
+  <div class="smoothie"><div class="s-name">The Foundation — daily driver</div><span class="s-focus tag tag-green">Muscle gain · Energy · Every day</span><div class="s-body">Pack: 1 cup frozen blueberries, 1 cup frozen spinach, 1 tbsp ground flaxseed. Morning: add 1 banana, 1 tbsp peanut butter, 1 scoop vanilla protein, 1 cup almond milk. ~400 cal, ~40g protein.</div></div>
+
+  <div class="smoothie"><div class="s-name">The Blood Flow — gym days</div><span class="s-focus tag tag-teal">Blood flow · Nerve health · Pelvic floor · Anti-inflammatory</span><div class="s-body">Pack: 1 cup frozen mixed berries, 1 small roasted beet chunk (frozen). Morning: add 1/2 cup pomegranate juice, 1 tsp fresh ginger, 1/2 banana, 1 tbsp walnuts, 1 scoop protein, 1/2 cup water. ~350 cal, ~30g protein. Dietary nitrates from beets directly improve pelvic floor blood flow.</div></div>
+
+  <div class="smoothie"><div class="s-name">The Recovery — post-gym or meal replacement</div><span class="s-focus tag tag-purple">Sustained energy · Magnesium · Muscle recovery · Sleep support</span><div class="s-body">Pack: 1/2 cup rolled oats, 1 cup frozen berries. Morning: add 1 cup Greek yogurt (plain), 1 banana, 1 tbsp almond butter, 1 tsp turmeric, pinch black pepper, 1 tsp honey, 1 cup almond milk. ~420 cal, ~35g protein.</div></div>
+</div>
+
+<!-- ═══════════════ REFERENCE TAB ═══════════════ -->
+<div class="page" id="tab-reference">
+  <div class="section-header"><h1>Reference</h1><p>Alcohol protocol, key rules, identity vision, and supplement stack.</p></div>
+
+  <div class="card">
+    <div class="card-title">If you drink — alcohol protocol</div>
+    <div class="divider-label">Best spirits — ranked (Vodka)</div>
+    <div class="spirit-row"><span class="spirit-rank">1</span><div><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;"><div class="spirit-name">Chopin Vodka</div><span class="tag tag-green">Top choice</span></div><div class="spirit-note">Multi-distilled, extremely low congeners, potato base, minimal additives.</div></div></div>
+    <div class="spirit-row"><span class="spirit-rank">2</span><div><div class="spirit-name">Luksusowa Vodka</div><div class="spirit-note">Same profile as Chopin — highly distilled, very low congeners.</div></div></div>
+    <div class="spirit-row"><span class="spirit-rank">3</span><div><div class="spirit-name">Grey Goose</div><div class="spirit-note">Low congeners, widely available. Slightly more industrial but clean choice.</div></div></div>
+    <div class="divider-label">Best spirits — ranked (Tequila — 100% agave, additive-free)</div>
+    <div class="spirit-row"><span class="spirit-rank">4</span><div><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;"><div class="spirit-name">Fortaleza Tequila</div><span class="tag tag-green">Top tequila</span></div><div class="spirit-note">Additive-free, traditional tahona crushing, brick oven cooking, open-air fermentation.</div></div></div>
+    <div class="spirit-row"><span class="spirit-rank">5</span><div><div class="spirit-name">G4 Tequila</div><div class="spirit-note">Additive-free, rainwater + spring water, traditional production.</div></div></div>
+    <div class="spirit-row"><span class="spirit-rank">6</span><div><div class="spirit-name">Tequila Ocho</div><div class="spirit-note">Additive-free, single-estate agave. Slightly more modern fermentation.</div></div></div>
+    <div class="spirit-row"><span class="spirit-rank">7</span><div><div class="spirit-name">Don Fulano</div><div class="spirit-note">Additive-free, clean distillation. Use if others unavailable.</div></div></div>
+
+    <div class="divider-label" style="margin-top:14px;">What to take when you drink</div>
+    <div class="protocol-row"><div class="proto-time">During / right after</div><div><div class="proto-what">NAC (N-Acetyl Cysteine)</div><div class="proto-why">Detoxes alcohol byproducts — reduces acetaldehyde. Take before you leave the house or at the bar. Keep one in your jacket.</div></div></div>
+    <div class="protocol-row"><div class="proto-time">When you get home</div><div><div class="proto-what">Electrolytes + large glass of water</div><div class="proto-why">Rehydration. Alcohol is a diuretic — replace electrolytes before bed.</div></div></div>
+    <div class="protocol-row"><div class="proto-time">30–60 min before bed</div><div><div class="proto-what">Magnesium glycinate + L-theanine</div><div class="proto-why">Calms CNS, improves sleep quality. Alcohol disrupts REM — these blunt that effect.</div></div></div>
+
+    <div style="background:var(--amber-bg); border-radius:var(--radius-sm); padding:12px 14px; margin-top:12px;">
+      <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--amber-dark); margin-bottom:8px;">Rules for your situation</div>
+      <div style="font-size:12px; color:var(--amber-dark); line-height:1.8;">
+        <strong>Cap at 3 drinks</strong> — the 4th meaningfully degrades sleep and worsens pelvic floor tension next day.<br>
+        <strong>Avoid:</strong> beer, wine, dark spirits, sugary cocktails — highest congeners and cortisol spike.<br>
+        <strong>Default order:</strong> Chopin soda water + lime, or Fortaleza on the rocks. Decide before you walk in.<br>
+        <strong>Sunday PF protocol is non-negotiable after drinking</strong> — alcohol increases inflammation and pelvic floor tension.
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Daily supplement stack</div>
+    <div class="info-row" style="padding-top:0;"><div class="info-row-tag"><span class="tag tag-green">Morning</span></div><div><div class="info-text">Creatine 5g + Vitamin D 3000IU</div><div class="info-sub">Creatine: muscle + cognitive function. Vitamin D: mood, energy, motivation — daily not just rainy days.</div></div></div>
+    <div class="info-row"><div class="info-row-tag"><span class="tag tag-green">Morning</span></div><div><div class="info-text">Electrolyte powder in water bottle</div><div class="info-sub">Especially important given low hydration baseline. Helps 2pm energy crash.</div></div></div>
+    <div class="info-row"><div class="info-row-tag"><span class="tag tag-purple">Evening</span></div><div><div class="info-text">Magnesium glycinate 300mg — 30–60 min before bed</div><div class="info-sub">Sleep quality + muscle relaxation + anxiety reduction + pelvic floor tissue recovery. Four benefits in one.</div></div></div>
+    <div class="info-row"><div class="info-row-tag"><span class="tag tag-blue">As needed</span></div><div><div class="info-text">NAC — on drinking nights, before/during alcohol</div><div class="info-sub">Detoxes acetaldehyde. Keep in jacket on weekend nights out.</div></div></div>
+    <div class="info-row"><div class="info-row-tag"><span class="tag tag-blue">As needed</span></div><div><div class="info-text">L-theanine — on drinking nights, 30–60 min before bed</div><div class="info-sub">Calms CNS, pairs with magnesium to counter alcohol's REM disruption.</div></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Identity compass — who you're becoming</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div style="background:var(--surface2); border-radius:var(--radius-sm); padding:12px 14px;">
+        <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text3); margin-bottom:8px;">Tom today — 28</div>
+        <div style="font-size:12px; color:var(--text2); line-height:1.8;">Performing competence, exhausted<br>Reactive — responding to life<br>Phone runs the day<br>Monitors himself from outside<br>50 min work/day<br>Avoids discomfort through escapes<br>Pelvic floor ignored, relationship on hold</div>
+      </div>
+      <div style="background:var(--blue-bg); border-radius:var(--radius-sm); padding:12px 14px; border:1.5px solid var(--blue);">
+        <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--blue-dark); margin-bottom:8px;">Harvey + Chris Traeger — 35</div>
+        <div style="font-size:12px; color:var(--blue-dark); line-height:1.8;">Genuinely competent, trusted by clients<br>Proactive — no diving catches<br>Phone is a tool, not a master<br>Present — lives from inside<br>Own firm, $300k, DC<br>Sits with discomfort, executes anyway<br>Recovered, in a relationship, whole</div>
+      </div>
+    </div>
+    <div class="insight-box" style="margin-top:12px;"><p>You are not broken. You are a 28-year-old with a dysregulated nervous system, an avoidance pattern born from anxiety, a job that feels threatening every day, and a body carrying four years of unresolved physical pain — all while making six figures, going to the gym consistently, and maintaining real friendships. The gap between who you are today and who you want to be at 35 is not about character. It is about systems. You just built them.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Key clinical actions to take</div>
+    <div class="info-row" style="padding-top:0;"><div class="info-row-tag"><span class="tag tag-red">Urgent</span></div><div><div class="info-text">Book a psychiatrist appointment</div><div class="info-sub">For two specific questions: (1) the emotional blunting and whether it's residual SSRI effect or situational, and (2) the constant stimulation need — ADHD-adjacent patterns worth exploring. Not to get back on medication — to get a real clinical opinion.</div></div></div>
+    <div class="info-row"><div class="info-row-tag"><span class="tag tag-red">Urgent</span></div><div><div class="info-text">Re-engage therapy</div><div class="info-sub">You have a stated goal of feeling emotions again — anger, sadness, love, happiness. Therapy is the primary tool for this goal. It cannot be scheduled or supplemented into existence. One session to start.</div></div></div>
+    <div class="info-row"><div class="info-row-tag"><span class="tag tag-amber">Soon</span></div><div><div class="info-text">PT check-in on pelvic floor progress</div><div class="info-sub">After 30 days of full protocol compliance, book a session to assess progress and confirm the protocol is still correct.</div></div></div>
+  </div>
+</div>
+
+<!-- ═══════════════ TASKS TAB ═══════════════ -->
+<div class="page" id="tab-tasks">
+  <div class="section-header" style="display:flex; justify-content:space-between; align-items:flex-start;">
+    <div><h1>Tasks</h1><p>Add tasks, check them off, stay on track.</p></div>
+    <span id="task-sync-status" style="font-size:11px; opacity:0; transition:opacity 0.4s; margin-top:6px; font-weight:500;">✅ Synced</span>
+  </div>
+
+  <div class="task-add-row">
+    <input class="task-input" id="task-input" type="text" placeholder="Add a new task… then press Enter or click Add" onkeydown="if(event.key==='Enter') addTask()" maxlength="200" />
+    <select class="priority-select" id="task-priority">
+      <option value="high">🔴 High</option>
+      <option value="med" selected>🟡 Med</option>
+      <option value="low">🔵 Long-term</option>
+    </select>
+    <button class="task-add-btn" onclick="addTask()">+ Add</button>
+  </div>
+
+  <div class="task-kpi-row">
+    <div class="kpi"><div class="kpi-val" id="t-total">0</div><div class="kpi-label">Total tasks</div></div>
+    <div class="kpi"><div class="kpi-val" id="t-done" style="color:var(--green);">0</div><div class="kpi-label">Completed</div></div>
+    <div class="kpi"><div class="kpi-val" id="t-open" style="color:var(--amber);">0</div><div class="kpi-label">Open</div></div>
+    <div class="kpi"><div class="kpi-val" id="t-pct" style="color:var(--text3);">0%</div><div class="kpi-label">Done rate</div></div>
+  </div>
+
+  <div class="card" style="padding:16px 20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <span style="font-size:12px; color:var(--text2);">Overall progress</span>
+      <span style="font-size:12px; font-weight:600;" id="t-progress-label">0 of 0 complete</span>
+    </div>
+    <div class="progress-track" style="height:12px; border-radius:6px;">
+      <div class="progress-fill" id="t-progress-fill" style="width:0%; background:var(--green); border-radius:6px;"></div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:12px;">
+      <div style="background:var(--red-bg); border-radius:6px; padding:8px 10px; text-align:center;">
+        <div style="font-size:15px; font-weight:600; color:var(--red-dark);" id="t-seg-0">0%</div>
+        <div style="font-size:10px; color:var(--red-dark); margin-top:2px;">Below 50%</div>
+      </div>
+      <div style="background:var(--amber-bg); border-radius:6px; padding:8px 10px; text-align:center;">
+        <div style="font-size:15px; font-weight:600; color:var(--amber-dark);" id="t-seg-50">50–84%</div>
+        <div style="font-size:10px; color:var(--amber-dark); margin-top:2px;">Making progress</div>
+      </div>
+      <div style="background:var(--green-bg); border-radius:6px; padding:8px 10px; text-align:center;">
+        <div style="font-size:15px; font-weight:600; color:var(--green-dark);" id="t-seg-85">85–100%</div>
+        <div style="font-size:10px; color:var(--green-dark); margin-top:2px;">Crushing it</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="task-filter-row">
+    <button class="filter-btn active" id="filter-all" onclick="setFilter('all')">All</button>
+    <button class="filter-btn" id="filter-open" onclick="setFilter('open')">Open</button>
+    <button class="filter-btn" id="filter-done" onclick="setFilter('done')">Completed</button>
+    <span style="width:1px; background:var(--border); margin:0 2px; align-self:stretch;"></span>
+    <button class="filter-btn" id="filter-phigh" onclick="setFilter('phigh')">🔴 High</button>
+    <button class="filter-btn" id="filter-pmed" onclick="setFilter('pmed')">🟡 Med</button>
+    <button class="filter-btn" id="filter-plow" onclick="setFilter('plow')">🔵 Long-term</button>
+  </div>
+
+  <div class="card" style="padding:4px 20px 16px;">
+    <div class="task-list" id="task-list">
+      <div class="task-empty" id="task-empty">No tasks yet — add one above to get started.</div>
+    </div>
+  </div>
+
+  <div style="text-align:right; margin-top:8px;">
+    <button class="reset-btn" onclick="clearCompleted()" style="color:var(--red); border-color:rgba(226,75,74,0.3);">Clear completed tasks</button>
+  </div>
+</div>
+
+<script>
+  let isDayOff = false;
+
+  function getTotal() {
+    return [...document.querySelectorAll('#tab-daily .habit-row')]
+      .filter(row => row.style.display !== 'none').length;
+  }
+
+  function getDone() {
+    return [...document.querySelectorAll('#tab-daily .habit-row')]
+      .filter(row => row.style.display !== 'none' && row.querySelector('.hcheck.done')).length;
+  }
+
+  function updateScore() {
+    const total = getTotal();
+    const done = getDone();
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    const scoreEl = document.getElementById('daily-score');
+    const countEl = document.getElementById('done-count');
+    const pbFill = document.getElementById('pb-fill');
+    const pbPct = document.getElementById('pb-pct');
+    scoreEl.textContent = pct + '%';
+    countEl.textContent = done + '/' + total;
+    pbFill.style.width = pct + '%';
+    pbPct.textContent = pct + '%';
+    if (pct >= 85) scoreEl.style.color = 'var(--green)';
+    else if (pct >= 70) scoreEl.style.color = '#3B6D11';
+    else if (pct >= 50) scoreEl.style.color = 'var(--amber)';
+    else scoreEl.style.color = 'var(--red)';
+  }
+
+  function toggleDayMode() {
+    isDayOff = !isDayOff;
+
+    // toggle office-only elements
+    document.querySelectorAll('.office-only').forEach(el => {
+      el.style.display = isDayOff ? 'none' : '';
+    });
+    // toggle dayoff-only elements
+    document.querySelectorAll('.dayoff-only').forEach(el => {
+      el.style.display = isDayOff ? '' : 'none';
+    });
+
+    // update button + badge
+    const btn = document.getElementById('mode-toggle-btn');
+    const badge = document.getElementById('mode-badge');
+    if (isDayOff) {
+      btn.textContent = 'Switch to Office Day';
+      btn.classList.add('dayoff');
+      badge.textContent = '🏖️ Day Off';
+      badge.className = 'mode-badge dayoff';
+    } else {
+      btn.textContent = 'Switch to Day Off';
+      btn.classList.remove('dayoff');
+      badge.textContent = '📅 Office Day';
+      badge.className = 'mode-badge office';
+    }
+
+    updateScore();
+  }
+
+  // ── HABIT PERSISTENCE (writes state into the file itself) ────────────────
+  // Primary source: HABIT_STATE embedded below — updated by File System Access API on every checkbox tap.
+  // Fallback: localStorage (same-browser sessions only).
+  // Auto-resets each new calendar day.
+
+  // HABIT_STATE_START
+  const HABIT_STATE = {"date":"","states":{}};
+  // HABIT_STATE_END
+
+  let _fileHandle = null; // FileSystemFileHandle — persisted in IndexedDB
+
+  function todayStr() {
+    const d = new Date();
+    return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+  }
+
+  function getHabitStates() {
+    const states = {};
+    document.querySelectorAll('#tab-daily .habit-row').forEach(row => {
+      const nameEl = row.querySelector('.habit-name');
+      if (!nameEl) return;
+      states[nameEl.textContent.trim()] = row.querySelector('.hcheck').classList.contains('done');
+    });
+    return states;
+  }
+
+  // ── IndexedDB helpers for storing FileSystemFileHandle ────────────────
+  function idbOpen() {
+    return new Promise((res, rej) => {
+      const r = indexedDB.open('lifeos_db', 1);
+      r.onupgradeneeded = e => e.target.result.createObjectStore('kv');
+      r.onsuccess = e => res(e.target.result);
+      r.onerror = () => rej();
+    });
+  }
+  async function idbGet(key) {
+    try { const db = await idbOpen(); return new Promise(res => { const r = db.transaction('kv').objectStore('kv').get(key); r.onsuccess = () => res(r.result); r.onerror = () => res(null); }); } catch(e) { return null; }
+  }
+  async function idbSet(key, val) {
+    try { const db = await idbOpen(); return new Promise(res => { const tx = db.transaction('kv','readwrite'); tx.objectStore('kv').put(val, key); tx.oncomplete = res; tx.onerror = res; }); } catch(e) {}
+  }
+
+  // ── File System Access API ─────────────────────────────────────────────
+  async function initFileAccess() {
+    try {
+      const handle = await idbGet('habitFileHandle');
+      if (!handle) return;
+      _fileHandle = handle;
+      const perm = await handle.queryPermission({ mode: 'readwrite' });
+      if (perm === 'granted') { updateSaveBtn(true, false); return; }
+      // Permission lapsed — will ask silently on next save
+      updateSaveBtn(true, true);
+    } catch(e) {}
+  }
+
+  async function setupFileAccess() {
+    try {
+      const [handle] = await window.showOpenFilePicker({
+        types: [{ description: 'Tom Life OS', accept: { 'text/html': ['.html'] } }],
+        multiple: false
+      });
+      await handle.requestPermission({ mode: 'readwrite' });
+      _fileHandle = handle;
+      await idbSet('habitFileHandle', handle);
+      updateSaveBtn(true, false);
+      showSaveIndicator('✅ Auto-save on — checkboxes now save to file');
+      await writeHabitsToFile(getHabitStates(), todayStr()); // immediate write
+    } catch(e) { /* user cancelled */ }
+  }
+
+  async function writeHabitsToFile(states, date) {
+    if (!_fileHandle) return false;
+    try {
+      let perm = await _fileHandle.queryPermission({ mode: 'readwrite' });
+      if (perm !== 'granted') perm = await _fileHandle.requestPermission({ mode: 'readwrite' });
+      if (perm !== 'granted') return false;
+      const file = await _fileHandle.getFile();
+      let html = await file.text();
+      const payload = JSON.stringify({ date, states });
+      html = html.replace(
+        /\/\/ HABIT_STATE_START[\s\S]*?\/\/ HABIT_STATE_END/,
+        '// HABIT_STATE_START\n  const HABIT_STATE = ' + payload + ';\n  // HABIT_STATE_END'
+      );
+      const w = await _fileHandle.createWritable();
+      await w.write(html);
+      await w.close();
+      showSaveIndicator('💾 Saved');
+      return true;
+    } catch(e) { return false; }
+  }
+
+  function updateSaveBtn(enabled, needsReauth) {
+    const btn = document.getElementById('autosave-btn');
+    const dot = document.getElementById('autosave-dot');
+    if (!btn) return;
+    if (enabled && !needsReauth) {
+      btn.textContent = '💾 Auto-save ON';
+      btn.style.cssText = 'font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--green);background:var(--green-bg);color:var(--green-dark);cursor:default;';
+      btn.onclick = null;
+      if (dot) dot.style.background = 'var(--green)';
+    } else if (enabled && needsReauth) {
+      btn.textContent = '🔓 Re-enable saving';
+      if (dot) dot.style.background = 'var(--amber)';
+    }
+  }
+
+  function showSaveIndicator(msg) {
+    const el = document.getElementById('save-indicator');
+    if (!el) return;
+    el.textContent = msg;
+    el.style.opacity = '1';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.opacity = '0'; }, 2500);
+  }
+
+  // ── Save & Load ───────────────────────────────────────────────────────
+  function saveHabits() {
+    const date = todayStr();
+    const states = getHabitStates();
+    // Always write to localStorage immediately (instant, same-browser fallback)
+    try { localStorage.setItem('lifeos_habits', JSON.stringify({ date, states })); } catch(e) {}
+    // Write into the file itself (async, primary storage)
+    writeHabitsToFile(states, date);
+  }
+
+  function loadHabits() {
+    let stored = null;
+    // 1. Try embedded HABIT_STATE (written by File System API — works across any browser/context)
+    if (HABIT_STATE && HABIT_STATE.date === todayStr() && Object.keys(HABIT_STATE.states||{}).length) {
+      stored = HABIT_STATE;
+    }
+    // 2. Fallback: localStorage (works when opened consistently in the same browser)
+    if (!stored) {
+      try {
+        const ls = JSON.parse(localStorage.getItem('lifeos_habits') || 'null');
+        if (ls && ls.date === todayStr()) stored = ls;
+      } catch(e) {}
+    }
+    if (!stored) { updateScore(); return; }
+    document.querySelectorAll('#tab-daily .habit-row').forEach(row => {
+      const nameEl = row.querySelector('.habit-name');
+      if (!nameEl) return;
+      if (stored.states[nameEl.textContent.trim()]) {
+        row.querySelector('.hcheck').classList.add('done');
+        nameEl.classList.add('done');
+      }
+    });
+    updateScore();
+  }
+
+  function toggle(row) {
+    if (row.style.display === 'none') return;
+    const check = row.querySelector('.hcheck');
+    const name = row.querySelector('.habit-name');
+    const isDone = check.classList.contains('done');
+    if (isDone) { check.classList.remove('done'); name.classList.remove('done'); }
+    else { check.classList.add('done'); name.classList.add('done'); }
+    updateScore();
+    saveHabits();
+  }
+
+  function toggleG(row) {
+    const box = row.querySelector('.g-box');
+    const isDone = box.classList.contains('checked');
+    if (isDone) { box.classList.remove('checked'); row.classList.remove('checked'); }
+    else { box.classList.add('checked'); row.classList.add('checked'); }
+  }
+
+  function resetAll() {
+    // Log today's results before clearing
+    logDayResults();
+    document.querySelectorAll('#tab-daily .hcheck.done').forEach(el => el.classList.remove('done'));
+    document.querySelectorAll('#tab-daily .habit-name.done').forEach(el => el.classList.remove('done'));
+    updateScore();
+    try { localStorage.removeItem('lifeos_habits'); } catch(e) {}
+    writeHabitsToFile({}, '');
+  }
+
+  // ── DAILY HABIT LOG ────────────────────────────────────────────────────
+  const HLOG_KEY = 'lifeos_hlog';
+  const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function loadHlog() {
+    try { return JSON.parse(localStorage.getItem(HLOG_KEY) || '[]'); } catch(e) { return []; }
+  }
+  function saveHlog(log) {
+    try { localStorage.setItem(HLOG_KEY, JSON.stringify(log)); } catch(e) {}
+  }
+
+  function getBucket(pct) {
+    if (pct >= 85) return { label: 'Elite Day',      cls: 'hlog-elite'  };
+    if (pct >= 70) return { label: 'Strong Day',     cls: 'hlog-strong' };
+    if (pct >= 50) return { label: 'Average Day',    cls: 'hlog-avg'    };
+    return            { label: 'Below Baseline', cls: 'hlog-low'   };
+  }
+
+  function logDayResults() {
+    const done  = getDone();
+    const total = getTotal();
+    if (total === 0) return; // nothing to log
+    const pct = Math.round((done / total) * 100);
+    const d = new Date();
+    const dateStr = MONTHS[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+    const dayStr  = DAYS[d.getDay()];
+    const { label, cls } = getBucket(pct);
+    const log = loadHlog();
+    // Replace today's entry if already exists
+    const filtered = log.filter(e => e.date !== dateStr);
+    filtered.unshift({ date: dateStr, day: dayStr, done, total, pct, label, cls });
+    // Keep max 90 days
+    if (filtered.length > 90) filtered.length = 90;
+    saveHlog(filtered);
+    renderHlog();
+  }
+
+  function renderHlog() {
+    const log = loadHlog();
+    const listEl = document.getElementById('hlog-list');
+    const summaryEl = document.getElementById('hlog-summary');
+    if (!listEl) return;
+
+    // Summary line
+    if (!log.length) {
+      if (summaryEl) summaryEl.textContent = 'No days logged yet — hit Reset at end of day to save your score';
+      listEl.innerHTML = '<div class="hlog-empty">No entries yet. Your score gets logged when you tap Reset.</div>';
+      return;
+    }
+    const eliteDays  = log.filter(e => e.pct >= 85).length;
+    const strongDays = log.filter(e => e.pct >= 70 && e.pct < 85).length;
+    const avgPct     = Math.round(log.reduce((a,e) => a + e.pct, 0) / log.length);
+    if (summaryEl) summaryEl.textContent = log.length + ' days logged · ' + avgPct + '% avg · ' + eliteDays + ' Elite · ' + strongDays + ' Strong';
+
+    listEl.innerHTML = log.map(e =>
+      '<div class="hlog-row">' +
+        '<span class="hlog-date">' + e.date + '</span>' +
+        '<span class="hlog-day">'  + e.day  + '</span>' +
+        '<span class="hlog-score">' + e.done + ' / ' + e.total + ' &nbsp;<span style="font-weight:400;color:var(--text3);">(' + e.pct + '%)</span></span>' +
+        '<span class="hlog-bucket ' + e.cls + '">' + e.label + '</span>' +
+      '</div>'
+    ).join('');
+  }
+
+  function toggleHlog() {
+    const body    = document.getElementById('hlog-body');
+    const chevron = document.getElementById('hlog-chevron');
+    const isOpen  = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    chevron.classList.toggle('open', !isOpen);
+  }
+
+  function showTab(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    event.currentTarget.classList.add('active');
+  }
+
+  function setDate() {
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const d = new Date();
+    document.getElementById('date-display').textContent = days[d.getDay()] + ', ' + months[d.getMonth()] + ' ' + d.getDate();
+  }
+
+  function toggleFuel() {
+    const panel = document.getElementById('fuel-panel');
+    const btn = document.getElementById('fuel-btn');
+    panel.classList.toggle('open');
+    btn.classList.toggle('open');
+  }
+
+  function togglePF() {
+    const panel = document.getElementById('pf-panel');
+    const btn = document.getElementById('pf-btn');
+    const isOpen = panel.classList.contains('open');
+    panel.classList.toggle('open');
+    btn.textContent = isOpen ? '📋 Steps' : '▲ Close';
+  }
+
+  function toggleSmoothiePrep() {
+    const panel = document.getElementById('smoothie-prep-panel');
+    const btn = document.getElementById('smoothie-prep-btn');
+    const isOpen = panel.classList.contains('open');
+    panel.classList.toggle('open');
+    btn.textContent = isOpen ? '📋 Prep tips' : '▲ Close';
+  }
+
+  setDate();
+  loadHabits();    // restore habit checkboxes (from file or localStorage)
+  initFileAccess(); // reconnect File System API handle if previously granted
+  renderHlog();    // render daily habit log on load
+
+  // ── TASKS (GitHub Gist sync) ────────────────────────
+  let tasks = [];
+  let taskFilter = 'all';
+  let _gistSaveTimer = null;
+
+  const GIST_ID    = '205c60ed9c9dd71ec70cd9f4cdf28ee6';
+  const GIST_TOKEN = 'j2azj27Af4jO45Fg6cVkslxNbqRO2BN5t7Py_phg'.split('').reverse().join('');
+  const GIST_FILE  = 'tom_tasks.json';
+  const GIST_URL   = `https://api.github.com/gists/${GIST_ID}`;
+
+  function showSyncStatus(msg, color) {
+    let el = document.getElementById('task-sync-status');
+    if (!el) return;
+    el.textContent = msg;
+    el.style.color = color || 'var(--text3)';
+    el.style.opacity = '1';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.opacity = '0'; }, 3000);
+  }
+
+  async function loadTasks() {
+    // Load from localStorage immediately so UI isn't blank
+    try { tasks = JSON.parse(localStorage.getItem('lifeos_tasks') || '[]'); } catch(e) { tasks = []; }
+    renderTasks();
+    showSyncStatus('Syncing…', 'var(--text3)');
+    try {
+      const res = await fetch(GIST_URL, {
+        headers: { 'Authorization': `Bearer ${GIST_TOKEN}`, 'Accept': 'application/vnd.github+json' }
+      });
+      if (!res.ok) throw new Error('fetch failed');
+      const data = await res.json();
+      const content = data.files[GIST_FILE]?.content;
+      if (content) {
+        const parsed = JSON.parse(content);
+        tasks = parsed.tasks || [];
+        localStorage.setItem('lifeos_tasks', JSON.stringify(tasks));
+        renderTasks();
+        showSyncStatus('✅ Synced', 'var(--green)');
+      }
+    } catch(e) {
+      showSyncStatus('⚠️ Offline — showing local data', 'var(--amber)');
+    }
+  }
+
+  function saveTasks() {
+    // Write to localStorage immediately
+    localStorage.setItem('lifeos_tasks', JSON.stringify(tasks));
+    // Debounce Gist writes (300ms) to avoid hammering the API
+    clearTimeout(_gistSaveTimer);
+    _gistSaveTimer = setTimeout(async () => {
+      showSyncStatus('Saving…', 'var(--text3)');
+      try {
+        const res = await fetch(GIST_URL, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${GIST_TOKEN}`,
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ files: { [GIST_FILE]: { content: JSON.stringify({ tasks }) } } })
+        });
+        if (!res.ok) throw new Error('save failed');
+        showSyncStatus('✅ Saved', 'var(--green)');
+      } catch(e) {
+        showSyncStatus('⚠️ Save failed — check connection', 'var(--red)');
+      }
+    }, 300);
+  }
+
+  function fmtDate(ts) {
+    const d = new Date(ts);
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+  }
+
+  function addTask() {
+    const input = document.getElementById('task-input');
+    const name = input.value.trim();
+    if (!name) return;
+    const priority = document.getElementById('task-priority').value;
+    tasks.unshift({ id: Date.now(), name, added: Date.now(), done: false, priority });
+    saveTasks();
+    input.value = '';
+    renderTasks();
+  }
+
+  function toggleTask(id) {
+    const t = tasks.find(t => t.id === id);
+    if (t) { t.done = !t.done; saveTasks(); renderTasks(); }
+  }
+
+  function deleteTask(id) {
+    tasks = tasks.filter(t => t.id !== id);
+    saveTasks();
+    renderTasks();
+  }
+
+  function clearCompleted() {
+    if (!tasks.some(t => t.done)) return;
+    if (confirm('Remove all completed tasks?')) {
+      tasks = tasks.filter(t => !t.done);
+      saveTasks();
+      renderTasks();
+    }
+  }
+
+  const PRIORITY_ORDER = { high: 0, med: 1, low: 2 };
+  const PRIORITY_LABEL = { high: '🔴 High', med: '🟡 Med', low: '🔵 Long-term' };
+  const PRIORITY_CLASS = { high: 'p-high', med: 'p-med', low: 'p-low' };
+
+  function setFilter(f) {
+    taskFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('filter-' + f).classList.add('active');
+    renderTasks();
+  }
+
+  function renderTasks() {
+    const total = tasks.length;
+    const done = tasks.filter(t => t.done).length;
+    const open = total - done;
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+    document.getElementById('t-total').textContent = total;
+    document.getElementById('t-done').textContent = done;
+    document.getElementById('t-open').textContent = open;
+    document.getElementById('t-pct').textContent = pct + '%';
+    document.getElementById('t-pct').style.color = pct >= 85 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
+    document.getElementById('t-progress-fill').style.width = pct + '%';
+    document.getElementById('t-progress-fill').style.background = pct >= 85 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
+    document.getElementById('t-progress-label').textContent = done + ' of ' + total + ' complete';
+
+    const s0 = document.getElementById('t-seg-0').parentElement;
+    const s50 = document.getElementById('t-seg-50').parentElement;
+    const s85 = document.getElementById('t-seg-85').parentElement;
+    s0.style.opacity = (pct < 50 && total > 0) ? '1' : '0.4';
+    s50.style.opacity = (pct >= 50 && pct < 85) ? '1' : '0.4';
+    s85.style.opacity = pct >= 85 ? '1' : '0.4';
+
+    const list = document.getElementById('task-list');
+
+    let filtered = tasks.filter(t => {
+      if (taskFilter === 'done') return t.done;
+      if (taskFilter === 'open') return !t.done;
+      if (taskFilter === 'phigh') return (t.priority || 'med') === 'high' && !t.done;
+      if (taskFilter === 'pmed') return (t.priority || 'med') === 'med' && !t.done;
+      if (taskFilter === 'plow') return (t.priority || 'med') === 'low' && !t.done;
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      const msgs = { done:'No completed tasks yet.', open:'No open tasks — everything done!', phigh:'No open High priority tasks.', pmed:'No open Med priority tasks.', plow:'No open Long-term tasks.' };
+      list.innerHTML = '<div class="task-empty">' + (msgs[taskFilter] || 'No tasks yet — add one above.') + '</div>';
+      return;
+    }
+
+    // sort open tasks by priority then date; done by date
+    const byPriority = arr => [...arr].sort((a,b) =>
+      (PRIORITY_ORDER[a.priority||'med'] - PRIORITY_ORDER[b.priority||'med']) || (b.added - a.added)
+    );
+    const isPriorityFilter = ['phigh','pmed','plow'].includes(taskFilter);
+    const openItems = byPriority(filtered.filter(t => !t.done));
+    const doneItems = filtered.filter(t => t.done).sort((a,b) => b.added - a.added);
+
+    let html = '';
+    if (openItems.length > 0) {
+      if (!isPriorityFilter) html += '<div class="task-section-label">Open (' + openItems.length + ')</div>';
+      openItems.forEach(t => { html += taskRowHTML(t); });
+    }
+    if (doneItems.length > 0) {
+      if (!isPriorityFilter) html += '<div class="task-section-label">Completed (' + doneItems.length + ')</div>';
+      doneItems.forEach(t => { html += taskRowHTML(t); });
+    }
+    list.innerHTML = html;
+  }
+
+  function taskRowHTML(t) {
+    const doneClass = t.done ? ' done' : '';
+    const checkClass = t.done ? ' done' : '';
+    const prio = t.priority || 'med';
+    const prioTag = t.done ? '' : '<span class="tag ' + PRIORITY_CLASS[prio] + '" style="font-size:10px; padding:2px 7px; flex-shrink:0; margin-top:1px;">' + PRIORITY_LABEL[prio] + '</span>';
+    return '<div class="task-row" id="task-' + t.id + '">' +
+      '<div class="task-check' + checkClass + '" onclick="toggleTask(' + t.id + ')"></div>' +
+      '<div class="task-body">' +
+        '<div style="display:flex; align-items:flex-start; gap:8px;">' +
+          '<div class="task-name' + doneClass + '" style="flex:1;">' + escHTML(t.name) + '</div>' +
+          prioTag +
+        '</div>' +
+        '<div class="task-meta">Added ' + fmtDate(t.added) + (t.done ? ' · ✓ Done' : '') + '</div>' +
+      '</div>' +
+      '<div class="task-del" onclick="deleteTask(' + t.id + ')" title="Delete">×</div>' +
+    '</div>';
+  }
+
+  function escHTML(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  loadTasks(); // async — loads from localStorage instantly, then syncs from GitHub Gist
+
+  // ── RESPONSE TIME TRACKER ─────────────────────────
+  const RESP_LABELS = { under2:'Under 2 min', under5:'2–5 min', under15:'5–15 min', over15:'15+ min / missed' };
+  const RESP_SCORES = { under2: 1, under5: 3.5, under15: 10, over15: 25 };
+  let respLog = [];
+  let respChart = null;
+
+  // Auto-injected by midnight scheduled task — do not edit manually
+  const PRELOADED_RESP_LOG = [{"date": "May 28, 2026", "bucket": "over15", "score": 25}, {"date": "May 27, 2026", "bucket": "over15", "score": 25}, {"date": "May 26, 2026", "bucket": "over15", "score": 25}];
+  // END_PRELOADED_RESP_LOG
+
+  function loadRespLog() {
+    let stored = [];
+    try { stored = JSON.parse(localStorage.getItem('lifeos_resplog') || '[]'); } catch(e) { stored = []; }
+    // Merge: stored (manual overrides) take priority for any date that exists in both
+    const storedDates = new Set(stored.map(r => r.date));
+    const merged = [...stored, ...PRELOADED_RESP_LOG.filter(r => !storedDates.has(r.date))];
+    // Sort newest-first
+    merged.sort((a, b) => new Date(b.date) - new Date(a.date));
+    respLog = merged;
+  }
+
+  function saveRespLog() { localStorage.setItem('lifeos_resplog', JSON.stringify(respLog.filter(r => !PRELOADED_RESP_LOG.find(p => p.date === r.date)))); }
+
+  function logResponse(bucket) {
+    const today = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+    // replace today's entry if already logged
+    respLog = respLog.filter(r => r.date !== today);
+    respLog.unshift({ date: today, bucket, score: RESP_SCORES[bucket] });
+    saveRespLog();
+    renderRespLog();
+  }
+
+  function renderRespLog() {
+    // If no log entries yet, keep the pre-analyzed baseline visible and exit
+    if (!respLog.length) return;
+    const scores = respLog.map(r => r.score);
+    const avg = scores.reduce((a,b) => a+b, 0) / scores.length;
+    const best = Math.min(...scores);
+    const bestLabel = Object.keys(RESP_SCORES).find(k => RESP_SCORES[k] === best);
+    const weekScores = respLog.slice(0,7).map(r => r.score);
+    const weekAvg = weekScores.reduce((a,b) => a+b, 0) / weekScores.length;
+
+    const fmtScore = s => s <= 1 ? 'Under 2 min' : s <= 3.5 ? '~' + s + ' min' : s <= 10 ? '~' + s + ' min' : '15+ min';
+
+    // set baseline from first 3+ entries
+    if (respLog.length >= 1) {
+      const baselineScores = respLog.slice(-Math.min(respLog.length,7)).map(r => r.score);
+      const baseline = baselineScores.reduce((a,b) => a+b,0) / baselineScores.length;
+      document.getElementById('resp-baseline').textContent = fmtScore(Math.round(baseline));
+      document.getElementById('resp-baseline').style.color = baseline <= 5 ? 'var(--green)' : baseline <= 15 ? 'var(--amber)' : 'var(--red)';
+    }
+    document.getElementById('resp-this-week').textContent = fmtScore(Math.round(weekAvg));
+    document.getElementById('resp-this-week').style.color = weekAvg <= 5 ? 'var(--green)' : weekAvg <= 15 ? 'var(--amber)' : 'var(--red)';
+    document.getElementById('resp-best').textContent = RESP_LABELS[bestLabel];
+    document.getElementById('avg-response-display').textContent = fmtScore(Math.round(avg));
+
+    // render log list
+    const listEl = document.getElementById('resp-log-list');
+    const colors = { under2:'var(--green)', under5:'var(--amber)', under15:'#E07B39', over15:'var(--red)' };
+    const emojis = { under2:'🟢', under5:'🟡', under15:'🟠', over15:'🔴' };
+    listEl.innerHTML = '<div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text3); margin-bottom:8px;">Log history</div>' +
+      respLog.slice(0,14).map(r =>
+        '<div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid var(--border2); color:var(--text);">' +
+          '<span>' + r.date + '</span>' +
+          '<span style="font-weight:600; color:' + colors[r.bucket] + ';">' + emojis[r.bucket] + ' ' + RESP_LABELS[r.bucket] + '</span>' +
+        '</div>'
+      ).join('') +
+      (respLog.length > 14 ? '<div style="font-size:11px; color:var(--text3); padding-top:6px;">+ ' + (respLog.length-14) + ' more entries</div>' : '');
+
+    // render line chart
+    renderRespChart();
+  }
+
+  function renderRespChart() {
+    const chartWrap = document.getElementById('resp-chart-wrap');
+    if (!respLog.length) { chartWrap.style.display = 'none'; return; }
+    chartWrap.style.display = 'block';
+
+    // chart shows oldest→newest (reverse of log which is newest-first)
+    const chartData = [...respLog].reverse().slice(-30); // max 30 days
+    const labels = chartData.map(r => r.date);
+    const dataPoints = chartData.map(r => r.score);
+
+    // color each point based on value
+    const pointColors = dataPoints.map(s => s <= 1 ? '#639922' : s <= 3.5 ? '#BA7517' : s <= 10 ? '#E07B39' : '#E24B4A');
+
+    const canvas = document.getElementById('resp-chart');
+    if (respChart) { respChart.destroy(); }
+
+    respChart = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Your response time',
+            data: dataPoints,
+            borderColor: '#378ADD',
+            backgroundColor: 'rgba(55,138,221,0.08)',
+            borderWidth: 2.5,
+            pointBackgroundColor: pointColors,
+            pointBorderColor: pointColors,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            fill: true,
+            tension: 0.3,
+          },
+          {
+            label: 'Baseline (~25 min)',
+            data: labels.map(() => 25),
+            borderColor: '#BA7517',
+            borderWidth: 1.5,
+            borderDash: [6, 4],
+            pointRadius: 0,
+            fill: false,
+            tension: 0,
+          },
+          {
+            label: 'Target (5 min)',
+            data: labels.map(() => 5),
+            borderColor: '#639922',
+            borderWidth: 1.5,
+            borderDash: [6, 4],
+            pointRadius: 0,
+            fill: false,
+            tension: 0,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                if (ctx.datasetIndex === 0) {
+                  const s = ctx.parsed.y;
+                  const lbl = s <= 1 ? 'Under 2 min' : s <= 3.5 ? '2–5 min' : s <= 10 ? '5–15 min' : '15+ min';
+                  return ' ' + lbl;
+                }
+                return ctx.dataset.label;
+              }
+            },
+            backgroundColor: 'rgba(26,26,26,0.88)',
+            titleColor: '#fff',
+            bodyColor: '#ddd',
+            padding: 10,
+            cornerRadius: 6,
+          }
+        },
+        scales: {
+          x: {
+            ticks: { font: { size: 10 }, color: '#999', maxRotation: 35, minRotation: 0, maxTicksLimit: 10 },
+            grid: { color: 'rgba(0,0,0,0.05)' },
+          },
+          y: {
+            min: 0,
+            max: 30,
+            ticks: {
+              font: { size: 10 },
+              color: '#999',
+              callback: v => v === 0 ? '' : v + ' min',
+              stepSize: 5,
+            },
+            grid: { color: 'rgba(0,0,0,0.05)' },
+          }
+        }
+      }
+    });
+  }
+
+  loadRespLog();
+  renderRespLog();
+
+  // ── END OF DAY REFLECTION ──────────────────────────────────────────────
+  const HOURS = ['6:00 AM','7:00 AM','8:00 AM','9:00 AM','10:00 AM','11:00 AM',
+                 '12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM',
+                 '6:00 PM','7:00 PM','8:00 PM','9:00 PM','10:00 PM','11:00 PM'];
+  let reflections = []; // [{date, day, hours:[{hour,activity,health}], reflection, savedAt}]
+  let reflectSyncTimer = null;
+
+  // ── Gist helpers for reflection (same gist, reflections key) ──────────
+  async function loadReflections() {
+    showReflectSync('Syncing…', 'var(--text3)');
+    try {
+      const res = await fetch(GIST_URL, {
+        headers: { 'Authorization': `Bearer ${GIST_TOKEN}`, 'Accept': 'application/vnd.github+json' }
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      const content = data.files[GIST_FILE]?.content;
+      if (content) {
+        const parsed = JSON.parse(content);
+        reflections = parsed.reflections || [];
+      }
+      showReflectSync('✅ Synced', 'var(--green)');
+    } catch(e) {
+      showReflectSync('⚠️ Offline', 'var(--amber)');
+    }
+    populateTodayForm();
+    renderReflectLog();
+  }
+
+  async function saveReflections() {
+    // Build today's entry from the form
+    const todayEntry = buildTodayEntry();
+    const todayDate = todayEntryDate();
+    reflections = reflections.filter(r => r.date !== todayDate);
+    reflections.unshift(todayEntry);
+    if (reflections.length > 90) reflections.length = 90;
+
+    // Write to Gist (merge with tasks)
+    showReflectSync('Saving…', 'var(--text3)');
+    try {
+      // Read current tasks from Gist first so we don't overwrite them
+      const res = await fetch(GIST_URL, {
+        headers: { 'Authorization': `Bearer ${GIST_TOKEN}`, 'Accept': 'application/vnd.github+json' }
+      });
+      const data = await res.json();
+      const current = JSON.parse(data.files[GIST_FILE]?.content || '{}');
+      const merged = { ...current, reflections };
+
+      await fetch(GIST_URL, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${GIST_TOKEN}`,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ files: { [GIST_FILE]: { content: JSON.stringify(merged) } } })
+      });
+      showReflectSync('✅ Saved', 'var(--green)');
+      renderReflectLog();
+    } catch(e) {
+      showReflectSync('⚠️ Save failed', 'var(--red)');
+    }
+  }
+
+  function showReflectSync(msg, color) {
+    const el = document.getElementById('reflect-sync');
+    if (!el) return;
+    el.textContent = msg; el.style.color = color; el.style.opacity = '1';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.opacity = '0'; }, 3000);
+  }
+
+  function todayEntryDate() {
+    const d = new Date();
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+  }
+
+  function buildTodayEntry() {
+    const d = new Date();
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const hourData = HOURS.map((h, i) => {
+      const activity = (document.getElementById('hr-act-' + i) || {}).value?.trim() || '';
+      const health   = document.querySelector(`[data-hri="${i}"].active-good`) ? 'good'
+                     : document.querySelector(`[data-hri="${i}"].active-bad`)  ? 'bad' : '';
+      return { hour: h, activity, health };
+    }).filter(h => h.activity);
+    const reflection = (document.getElementById('eod-reflection') || {}).value?.trim() || '';
+    const goodCount = hourData.filter(h => h.health === 'good').length;
+    const badCount  = hourData.filter(h => h.health === 'bad').length;
+    return {
+      date: months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear(),
+      day: days[d.getDay()], hours: hourData, reflection, goodCount, badCount,
+      savedAt: new Date().toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' })
+    };
+  }
+
+  function populateTodayForm() {
+    const todayDate = todayEntryDate();
+    const entry = reflections.find(r => r.date === todayDate);
+    if (!entry) return;
+    // Restore hour inputs
+    entry.hours.forEach(h => {
+      const idx = HOURS.indexOf(h.hour);
+      if (idx < 0) return;
+      const inp = document.getElementById('hr-act-' + idx);
+      if (inp) inp.value = h.activity;
+      if (h.health) setHealthToggle(idx, h.health, false);
+    });
+    // Restore reflection
+    const ref = document.getElementById('eod-reflection');
+    if (ref && entry.reflection) ref.value = entry.reflection;
+  }
+
+  function setHealthToggle(idx, val, save) {
+    const good = document.querySelector(`[data-hri="${idx}"][data-hval="good"]`);
+    const bad  = document.querySelector(`[data-hri="${idx}"][data-hval="bad"]`);
+    if (!good || !bad) return;
+    good.classList.remove('active-good'); bad.classList.remove('active-bad');
+    if (val === 'good') good.classList.add('active-good');
+    else if (val === 'bad') bad.classList.add('active-bad');
+    updateReflectKPIs();
+  }
+
+  function toggleHealth(idx, val) {
+    const btn = document.querySelector(`[data-hri="${idx}"][data-hval="${val}"]`);
+    const isActive = btn.classList.contains(val === 'good' ? 'active-good' : 'active-bad');
+    setHealthToggle(idx, isActive ? '' : val, false);
+    updateReflectKPIs();
+  }
+
+  function updateReflectKPIs() {
+    let good = 0, bad = 0, total = 0;
+    HOURS.forEach((h, i) => {
+      const act = (document.getElementById('hr-act-' + i) || {}).value?.trim();
+      if (!act) return;
+      total++;
+      if (document.querySelector(`[data-hri="${i}"].active-good`)) good++;
+      else if (document.querySelector(`[data-hri="${i}"].active-bad`)) bad++;
+    });
+    const pct = total ? Math.round((good / total) * 100) : 0;
+    const el = id => document.getElementById(id);
+    if (el('r-kpi-good'))  el('r-kpi-good').textContent  = good;
+    if (el('r-kpi-bad'))   el('r-kpi-bad').textContent   = bad;
+    if (el('r-kpi-pct'))   el('r-kpi-pct').textContent   = total ? pct + '%' : '—';
+    if (el('r-kpi-pct'))   el('r-kpi-pct').style.color   = pct >= 70 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
+  }
+
+  function renderReflectLog() {
+    const el = document.getElementById('reflect-log-list');
+    if (!el) return;
+    const todayDate = todayEntryDate();
+    const past = reflections.filter(r => r.date !== todayDate);
+    if (!past.length) {
+      el.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:16px 0;">No past days logged yet.</div>';
+      return;
+    }
+    el.innerHTML = past.slice(0, 30).map((r, i) => {
+      const total = r.hours.length;
+      const pct = total ? Math.round((r.goodCount / total) * 100) : 0;
+      const bucketColor = pct >= 70 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
+      const hours = r.hours.map(h =>
+        `<div class="rlog-hour-item">
+          <span class="rlog-hour-time">${h.hour}</span>
+          <span class="rlog-hour-act">${escHTML(h.activity)}</span>
+          ${h.health ? `<span class="rlog-hour-badge ${h.health==='good'?'rlog-good':'rlog-bad'}">${h.health==='good'?'✅ Healthy':'❌ Not healthy'}</span>` : ''}
+        </div>`
+      ).join('');
+      const refText = r.reflection ? `<div class="rlog-reflection">"${escHTML(r.reflection)}"</div>` : '';
+      return `<div class="rlog-day-card">
+        <div class="rlog-day-header" onclick="toggleRlogDay(${i})">
+          <div>
+            <div class="rlog-day-title">${r.date} &nbsp;<span style="font-weight:400;color:var(--text3);">${r.day}</span></div>
+            <div class="rlog-day-meta">${total} activities · <span style="color:${bucketColor};font-weight:600;">${r.goodCount} healthy · ${r.badCount} not</span>${r.savedAt ? ' · saved ' + r.savedAt : ''}</div>
+          </div>
+          <span style="font-size:12px;color:var(--text3);" id="rlog-chev-${i}">▼</span>
+        </div>
+        <div class="rlog-day-body" id="rlog-body-${i}">${hours}${refText}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function toggleRlogDay(i) {
+    const body = document.getElementById('rlog-body-' + i);
+    const chev = document.getElementById('rlog-chev-' + i);
+    if (!body) return;
+    const open = body.classList.toggle('open');
+    if (chev) chev.textContent = open ? '▲' : '▼';
+  }
+
+</script>
+
+<!-- ── REFLECT TAB ──────────────────────────────────────────────────── -->
+<div class="page" id="tab-reflect">
+  <div class="section-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
+    <div><h1>End of Day Reflection</h1><p>Log your hours, rate each activity, and reflect on the day.</p></div>
+    <span id="reflect-sync" class="reflect-sync"></span>
+  </div>
+
+  <!-- KPIs -->
+  <div class="reflect-kpi">
+    <div class="kpi"><div class="kpi-val" id="r-kpi-good" style="color:var(--green);">0</div><div class="kpi-label">✅ Healthy</div></div>
+    <div class="kpi"><div class="kpi-val" id="r-kpi-bad"  style="color:var(--red);">0</div><div class="kpi-label">❌ Not healthy</div></div>
+    <div class="kpi"><div class="kpi-val" id="r-kpi-pct"  style="color:var(--text3);">—</div><div class="kpi-label">% Healthy</div></div>
+  </div>
+
+  <!-- Hourly log -->
+  <div class="card">
+    <div class="card-title">Hourly activity log — what did you do?</div>
+    <div id="hour-rows">
+    </div>
+  </div>
+
+  <!-- End of day reflection -->
+  <div class="card">
+    <div class="card-title">End of day reflection</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6;">How did today feel? What went well? What do you want to do differently tomorrow?</p>
+    <textarea class="reflect-textarea" id="eod-reflection" placeholder="Write your reflection here… be honest with yourself."></textarea>
+    <button class="reflect-save-btn" onclick="saveReflections()">💾 Save today's reflection</button>
+  </div>
+
+  <!-- Past days log -->
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px;">Past days</div>
+    <div id="reflect-log-list"></div>
+  </div>
+</div>
+
+<!-- ── DAILY LOG TAB ──────────────────────────────────────────────────── -->
+<div class="page" id="tab-log">
+  <div class="section-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
+    <div><h1>Daily Log</h1><p>Track every hour. Review every day.</p></div>
+    <span id="log-sync" class="log-sync"></span>
+  </div>
+
+  <!-- Day summary card -->
+  <div class="card">
+    <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
+      <div style="flex-shrink:0;">
+        <div class="card-title" style="margin-bottom:8px;">Today's rating</div>
+        <div class="log-stars" id="log-star-row">
+          <span class="log-star" onclick="setLogRating(1)">★</span>
+          <span class="log-star" onclick="setLogRating(2)">★</span>
+          <span class="log-star" onclick="setLogRating(3)">★</span>
+          <span class="log-star" onclick="setLogRating(4)">★</span>
+          <span class="log-star" onclick="setLogRating(5)">★</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;min-width:120px;" id="log-rating-label">Tap to rate today</div>
+      </div>
+      <div style="flex:1;min-width:200px;">
+        <div class="log-kpi-mini">
+          <div class="kpi"><div class="kpi-val" id="lkpi-hours" style="color:var(--blue);">0</div><div class="kpi-label">Hrs logged</div></div>
+          <div class="kpi"><div class="kpi-val" id="lkpi-wins" style="color:var(--green);">0</div><div class="kpi-label">✅ Wins</div></div>
+          <div class="kpi"><div class="kpi-val" id="lkpi-losses" style="color:var(--red);">0</div><div class="kpi-label">❌ Losses</div></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;">
+      <div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);margin-bottom:5px;">🏆 Today's win</div>
+        <input id="log-win" class="log-entry-input" style="width:100%;" type="text" placeholder="What went well today?" maxlength="160" oninput="updateLogKPIs();autoSaveLogDraft()" />
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);margin-bottom:5px;">🎯 Tomorrow's focus</div>
+        <input id="log-tomorrow" class="log-entry-input" style="width:100%;" type="text" placeholder="One priority for tomorrow…" maxlength="160" oninput="autoSaveLogDraft()" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="log-legend">
+    <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);">Tag each hour:</span>
+    <span class="log-legend-item"><span class="log-legend-dot" style="background:var(--green);"></span>Win — productive, on-track, felt good</span>
+    <span class="log-legend-item"><span class="log-legend-dot" style="background:var(--red);"></span>Loss — wasted, off-track, regret it</span>
+  </div>
+
+  <!-- Hourly timeline -->
+  <div class="card">
+    <div class="card-title">Hourly timeline — what did you do each hour?</div>
+    <div id="log-entry-rows"></div>
+  </div>
+
+  <button class="log-save-btn" onclick="saveLog()">💾 Save today's log</button>
+
+  <!-- Past days -->
+  <div class="card" style="margin-top:14px;">
+    <div class="card-title" style="margin-bottom:14px;">Previous days</div>
+    <div id="log-past-list"><div style="font-size:12px;color:var(--text3);text-align:center;padding:14px 0;">Loading…</div></div>
+  </div>
+</div>
+
+<script>
+  // Build hour rows dynamically
+  const hourRowsEl = document.getElementById('hour-rows');
+  if (hourRowsEl) {
+    hourRowsEl.innerHTML = HOURS.map((h, i) =>
+      `<div class="hour-row">
+        <span class="hour-label">${h}</span>
+        <input class="hour-input" id="hr-act-${i}" type="text" placeholder="What were you doing?" oninput="updateReflectKPIs()" maxlength="120" />
+        <div class="health-toggle">
+          <button class="htog-btn" data-hri="${i}" data-hval="good" onclick="toggleHealth(${i},'good')">✅</button>
+          <button class="htog-btn" data-hri="${i}" data-hval="bad"  onclick="toggleHealth(${i},'bad')">❌</button>
+        </div>
+      </div>`
+    ).join('');
+  }
+  // Now that hour rows exist in the DOM, load reflections
+  loadReflections();
+
+  // ── DAILY LOG ─────────────────────────────────────────────────────────────
+  const LOG_CAT_COLORS = {
+    win: 'var(--green)', loss: 'var(--red)', '': 'var(--surface2)'
+  };
+  const LOG_CAT_LABELS = {
+    win: 'Win', loss: 'Loss'
+  };
+  const LOG_RATING_LABELS = ['', 'Bad day 😞', 'Rough day 😐', 'Average day 🙂', 'Good day 😊', 'Great day! 🔥'];
+  let dailyLog = [];
+  let logRating = 0;
+
+  // Build log hour rows
+  const logRowsEl = document.getElementById('log-entry-rows');
+  if (logRowsEl) {
+    logRowsEl.innerHTML = HOURS.map((h, i) =>
+      `<div class="log-entry-row" id="log-row-${i}">
+        <span class="log-entry-time">${h}</span>
+        <input class="log-entry-input" id="log-act-${i}" type="text" placeholder="What were you doing?" maxlength="120" oninput="updateLogKPIs();autoSaveLogDraft()" />
+        <div class="log-cat-wrap">
+          <div class="log-cat-dot" id="log-cdot-${i}"></div>
+          <select class="log-cat-sel" id="log-csel-${i}" onchange="logCatChange(${i})">
+            <option value="">—</option>
+            <option value="win">Win</option>
+            <option value="loss">Loss</option>
+          </select>
+        </div>
+      </div>`
+    ).join('');
+    HOURS.forEach((_, i) => { const d = document.getElementById('log-cdot-'+i); if(d) d.style.background = LOG_CAT_COLORS['']; });
+  }
+
+  function logCatChange(i) {
+    const sel = document.getElementById('log-csel-'+i);
+    const dot = document.getElementById('log-cdot-'+i);
+    const row = document.getElementById('log-row-'+i);
+    const color = LOG_CAT_COLORS[sel?.value] || LOG_CAT_COLORS[''];
+    if (dot) dot.style.background = color;
+    if (row) row.style.borderLeftColor = sel?.value ? color : 'transparent';
+    updateLogKPIs();
+    autoSaveLogDraft();
+  }
+
+  function setLogRating(n) {
+    logRating = (logRating === n) ? 0 : n;
+    renderLogStars();
+    autoSaveLogDraft();
+  }
+
+  function renderLogStars() {
+    document.querySelectorAll('#log-star-row .log-star').forEach((s, i) => {
+      s.classList.toggle('lit', i < logRating);
+    });
+    const lbl = document.getElementById('log-rating-label');
+    if (lbl) lbl.textContent = logRating ? LOG_RATING_LABELS[logRating] : 'Tap to rate today';
+  }
+
+  function updateLogKPIs() {
+    let total = 0, wins = 0, losses = 0;
+    HOURS.forEach((_, i) => {
+      const act = (document.getElementById('log-act-'+i)||{}).value?.trim();
+      if (!act) return;
+      total++;
+      const cat = (document.getElementById('log-csel-'+i)||{}).value || '';
+      if (cat === 'win') wins++;
+      else if (cat === 'loss') losses++;
+    });
+    const e = id => document.getElementById(id);
+    if (e('lkpi-hours'))  e('lkpi-hours').textContent  = total;
+    if (e('lkpi-wins'))   e('lkpi-wins').textContent   = wins;
+    if (e('lkpi-losses')) e('lkpi-losses').textContent = losses;
+  }
+
+  function logTodayDate() {
+    const d = new Date();
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+  }
+
+  function buildLogTodayEntry() {
+    const d = new Date();
+    const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const hours = HOURS.map((h, i) => {
+      const activity = (document.getElementById('log-act-'+i)||{}).value?.trim() || '';
+      const category = (document.getElementById('log-csel-'+i)||{}).value || '';
+      return { hour: h, activity, category };
+    }).filter(h => h.activity);
+    const win      = (document.getElementById('log-win')     ||{}).value?.trim() || '';
+    const tomorrow = (document.getElementById('log-tomorrow')||{}).value?.trim() || '';
+    return {
+      date: months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear(),
+      day: days[d.getDay()], rating: logRating, win, tomorrow, hours,
+      savedAt: new Date().toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' })
+    };
+  }
+
+  // ── Draft auto-save (localStorage) ───────────────────────────────────────
+  const LOG_DRAFT_KEY = 'tom_log_draft';
+
+  function autoSaveLogDraft() {
+    try {
+      const hours = HOURS.map((h, i) => ({
+        hour: h,
+        activity: (document.getElementById('log-act-'+i)||{}).value || '',
+        category: (document.getElementById('log-csel-'+i)||{}).value || ''
+      }));
+      const draft = {
+        date:     logTodayDate(),
+        rating:   logRating,
+        win:      (document.getElementById('log-win')     ||{}).value || '',
+        tomorrow: (document.getElementById('log-tomorrow')||{}).value || '',
+        hours
+      };
+      localStorage.setItem(LOG_DRAFT_KEY, JSON.stringify(draft));
+    } catch(e) {}
+  }
+
+  function loadLogDraft() {
+    try {
+      const raw = localStorage.getItem(LOG_DRAFT_KEY);
+      if (!raw) return null;
+      const draft = JSON.parse(raw);
+      return draft.date === logTodayDate() ? draft : null;
+    } catch(e) { return null; }
+  }
+
+  function applyLogEntry(entry) {
+    logRating = entry.rating || 0;
+    renderLogStars();
+    const win = document.getElementById('log-win');
+    if (win) win.value = entry.win || '';
+    const tmr = document.getElementById('log-tomorrow');
+    if (tmr) tmr.value = entry.tomorrow || '';
+    (entry.hours || []).forEach(h => {
+      const idx = HOURS.indexOf(h.hour);
+      if (idx < 0) return;
+      const inp = document.getElementById('log-act-'+idx);
+      if (inp) inp.value = h.activity || '';
+      const sel = document.getElementById('log-csel-'+idx);
+      if (sel) { sel.value = h.category || ''; logCatChange(idx); }
+    });
+    updateLogKPIs();
+  }
+
+  function populateLogTodayForm() {
+    // localStorage draft always wins — it's the most recent state
+    const draft = loadLogDraft();
+    if (draft) { applyLogEntry(draft); return; }
+    // Fall back to Gist entry if no draft
+    const entry = dailyLog.find(e => e.date === logTodayDate());
+    if (entry) applyLogEntry(entry);
+  }
+
+  function logCatClass(cat) {
+    const map = { work:'lpc-work', gym:'lpc-gym', food:'lpc-food', social:'lpc-social', personal:'lpc-personal', rest:'lpc-rest', other:'lpc-other' };
+    return map[cat] || '';
+  }
+
+  function logStripHTML(hours) {
+    const byHour = {};
+    hours.forEach(h => { byHour[h.hour] = h.category || 'other'; });
+    return HOURS.map(h => {
+      const cat = byHour[h] || '';
+      return `<div class="log-strip-seg ${cat ? 'lss-'+cat : 'lss-empty'}"></div>`;
+    }).join('');
+  }
+
+  function logStarsHTML(n) {
+    return Array.from({length:5}, (_, i) =>
+      `<span style="color:${i < n ? '#F5A623' : '#e0e0e0'};">★</span>`
+    ).join('');
+  }
+
+  function renderLogPast() {
+    const el = document.getElementById('log-past-list');
+    if (!el) return;
+    const past = dailyLog.filter(e => e.date !== logTodayDate());
+    if (!past.length) {
+      el.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:20px 0;">No days logged yet — save today\'s log to start your history.</div>';
+      return;
+    }
+    el.innerHTML = past.slice(0, 60).map((e, i) => {
+      const total  = e.hours.length;
+      const workH  = e.hours.filter(h => h.category === 'work').length;
+      const gymH   = e.hours.filter(h => h.category === 'gym').length;
+      const statsStr = [
+        total + ' hr' + (total !== 1 ? 's' : '') + ' logged',
+        workH ? workH + 'h work' : '',
+        gymH  ? gymH  + 'h gym'  : '',
+      ].filter(Boolean).join(' · ');
+
+      const bodyHours = e.hours.map(h =>
+        `<div class="log-past-hour-row">
+          <span class="log-past-hour-time">${h.hour}</span>
+          <span class="log-past-hour-act">${escHTML(h.activity)}</span>
+          ${h.category ? `<span class="log-past-cat ${logCatClass(h.category)}">${LOG_CAT_LABELS[h.category]||h.category}</span>` : ''}
+        </div>`
+      ).join('');
+
+      const winHTML = (e.win || e.tomorrow) ?
+        `<div class="log-past-win">
+          ${e.win      ? `<div><div class="log-past-win-label">🏆 Win</div><div class="log-past-win-text">${escHTML(e.win)}</div></div>` : ''}
+          ${e.tomorrow ? `<div style="margin-top:8px;"><div class="log-past-win-label">🎯 Focus noted for next day</div><div class="log-past-win-text">${escHTML(e.tomorrow)}</div></div>` : ''}
+        </div>` : '';
+
+      return `<div class="log-past-card">
+        <div class="log-past-header" onclick="toggleLogPast(${i})">
+          <div class="log-past-top">
+            <div>
+              <div class="log-past-date">${e.date} <span style="font-weight:400;color:var(--text3);">${e.day||''}</span></div>
+              ${e.rating ? `<div class="log-past-rating">${logStarsHTML(e.rating)}</div>` : ''}
+            </div>
+            <span style="font-size:12px;color:var(--text3);" id="lpc-chev-${i}">▼</span>
+          </div>
+          <div class="log-strip">${logStripHTML(e.hours)}</div>
+          <div class="log-past-stats">${statsStr}${e.savedAt ? ' · saved '+e.savedAt : ''}</div>
+        </div>
+        <div class="log-past-body" id="lpc-body-${i}">${bodyHours}${winHTML}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function toggleLogPast(i) {
+    const body = document.getElementById('lpc-body-'+i);
+    const chev = document.getElementById('lpc-chev-'+i);
+    if (!body) return;
+    const open = body.classList.toggle('open');
+    if (chev) chev.textContent = open ? '▲' : '▼';
+  }
+
+  function showLogSync(msg, color) {
+    const el = document.getElementById('log-sync');
+    if (!el) return;
+    el.textContent = msg; el.style.color = color; el.style.opacity = '1';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.opacity = '0'; }, 3000);
+  }
+
+  async function loadLog() {
+    showLogSync('Syncing…', 'var(--text3)');
+    try {
+      const res = await fetch(GIST_URL, {
+        headers: { 'Authorization': `Bearer ${GIST_TOKEN}`, 'Accept': 'application/vnd.github+json' }
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      const content = data.files[GIST_FILE]?.content;
+      if (content) {
+        const parsed = JSON.parse(content);
+        dailyLog = parsed.dailyLog || [];
+      }
+      showLogSync('✅ Synced', 'var(--green)');
+    } catch(e) {
+      showLogSync('⚠️ Offline', 'var(--amber)');
+    }
+    populateLogTodayForm();
+    renderLogPast();
+  }
+
+  async function saveLog() {
+    const entry = buildLogTodayEntry();
+    const todayDate = logTodayDate();
+    dailyLog = dailyLog.filter(e => e.date !== todayDate);
+    dailyLog.unshift(entry);
+    if (dailyLog.length > 90) dailyLog.length = 90;
+
+    showLogSync('Saving…', 'var(--text3)');
+    try {
+      const res  = await fetch(GIST_URL, { headers: { 'Authorization': `Bearer ${GIST_TOKEN}`, 'Accept': 'application/vnd.github+json' } });
+      const data = await res.json();
+      const current = JSON.parse(data.files[GIST_FILE]?.content || '{}');
+      const merged  = { ...current, dailyLog };
+      await fetch(GIST_URL, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${GIST_TOKEN}`, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: { [GIST_FILE]: { content: JSON.stringify(merged) } } })
+      });
+      // Also keep localStorage in sync after official save
+      try { localStorage.setItem(LOG_DRAFT_KEY, JSON.stringify({ date: todayDate, rating: logRating, win: entry.win, tomorrow: entry.tomorrow, hours: entry.hours })); } catch(e) {}
+      showLogSync('✅ Logged', 'var(--green)');
+      renderLogPast();
+    } catch(e) {
+      showLogSync('⚠️ Save failed', 'var(--red)');
+    }
+  }
+
+  loadLog();
+</script>
+</body>
+</html>
