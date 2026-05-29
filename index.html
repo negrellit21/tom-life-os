@@ -434,6 +434,7 @@
     <div class="tab" onclick="showTab('tasks')">Tasks</div>
     <div class="tab" onclick="showTab('reflect')">Reflect</div>
     <div class="tab" onclick="showTab('log')">Log</div>
+    <div class="tab" onclick="showTab('schedule')">Schedule</div>
   </div>
 </nav>
 
@@ -864,7 +865,7 @@
       <div class="age-card age-card-31">
         <div class="age-badge age-badge-31">31</div>
         <div class="age-label age-label-31">The Momentum Year</div>
-        <div class="age-milestone"><div class="age-dot" style="background:var(--red);"></div><strong>$145k–$160k in assets</strong> — $120k from 30, plus $2,500–3,000/month with no CC drag and investment returns compounding.</div></div>
+        <div class="age-milestone"><div class="age-dot" style="background:var(--red);"></div><strong>$145k–$160k in assets</strong> — $120k from 30, plus $2,500–3,000/month with no CC drag and investment returns compounding.</div>
         <div class="age-milestone"><div class="age-dot" style="background:var(--red);"></div><strong>Career pivot underway or decided</strong> — either: (A) promoted at current firm with CX transition plan, or (B) first CX consulting role lined up. No more drifting.</div>
         <div class="age-milestone"><div class="age-dot" style="background:var(--amber);"></div><strong>Serious relationship</strong> — emotionally available, pelvic floor non-issue, body confident. Not "looking" — actually building something.</div>
         <div class="age-milestone"><div class="age-dot" style="background:var(--amber);"></div><strong>Firm concept sketched out</strong> — name, niche, service offering. Not launched yet — but the blueprint exists. You know what you're building toward.</div>
@@ -2618,5 +2619,322 @@
 
   loadLog();
 </script>
-</body>
-</html>
+
+<style>
+/* ── Dynamic Scheduling Tab ─────────────────────────────── */
+.ds-hero { background:linear-gradient(135deg,#1a1000,#261800); border:1.5px solid #F5A623; border-radius:12px; padding:18px 22px; margin-bottom:18px; display:flex; align-items:center; gap:18px; }
+.ds-hero-icon { font-size:40px; flex-shrink:0; }
+.ds-hero-title { font-size:16px; font-weight:800; color:#F5A623; margin-bottom:5px; }
+.ds-hero-body { font-size:12px; color:var(--text2); line-height:1.65; }
+
+.ds-legend { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:18px; }
+.ds-pill { display:inline-flex; align-items:center; gap:5px; font-size:10.5px; font-weight:600; padding:3px 10px; border-radius:20px; }
+
+.ds-cal-wrap { border:1px solid var(--border2); border-radius:12px; overflow:hidden; margin-bottom:24px; }
+.ds-cal-head { display:flex; background:var(--card); border-bottom:1px solid var(--border2); }
+.ds-cal-head-time { width:44px; flex-shrink:0; border-right:1px solid var(--border2); }
+.ds-cal-head-day { flex:1; text-align:center; padding:9px 3px 8px; border-right:1px solid var(--border2); }
+.ds-cal-head-day:last-child { border-right:none; }
+.ds-cal-head-day .ds-day-name { font-size:10px; font-weight:800; color:var(--text2); text-transform:uppercase; letter-spacing:.04em; }
+.ds-cal-head-day .ds-day-sub { font-size:9px; color:var(--text3); margin-top:2px; }
+.ds-cal-body { display:flex; position:relative; }
+.ds-time-col { width:44px; flex-shrink:0; position:relative; height:760px; background:var(--card); border-right:1px solid var(--border2); }
+.ds-tl { position:absolute; right:5px; font-size:9px; color:var(--text3); transform:translateY(-50%); white-space:nowrap; }
+.ds-day-col { flex:1; position:relative; height:760px; border-right:1px solid var(--border2); overflow:hidden; }
+.ds-day-col:last-child { border-right:none; }
+.ds-hline { position:absolute; left:0; right:0; border-top:1px solid var(--border2); opacity:.4; }
+.ds-hline-major { border-top-color:var(--border2); opacity:.7; }
+
+.ds-blk { position:absolute; left:2px; right:2px; border-radius:5px; padding:3px 5px; font-size:8.5px; font-weight:700; overflow:hidden; line-height:1.35; display:flex; flex-direction:column; justify-content:flex-start; transition:opacity .15s; cursor:default; }
+.ds-blk:hover { opacity:.85; z-index:10; }
+.ds-blk-label { font-size:8px; font-weight:800; letter-spacing:.02em; opacity:.85; margin-bottom:1px; }
+.ds-blk-sub { font-size:7.5px; font-weight:500; opacity:.7; }
+
+/* block color classes */
+.ds-sleep  { background:rgba(15,23,42,.7);  border:1px solid #1e293b; color:#475569; }
+.ds-gold   { background:linear-gradient(160deg,rgba(245,166,35,.3),rgba(251,191,36,.15)); border:1.5px solid #F5A623; color:#FBBF24; }
+.ds-work   { background:rgba(59,130,246,.15); border:1px solid rgba(59,130,246,.4); color:#7ab3f9; }
+.ds-gym    { background:rgba(16,185,129,.15); border:1px solid rgba(16,185,129,.4); color:#4ade9a; }
+.ds-errand { background:rgba(6,182,212,.18);  border:1px solid rgba(6,182,212,.45); color:#38d7f0; }
+.ds-meal   { background:rgba(249,115,22,.15); border:1px solid rgba(249,115,22,.4); color:#fb8f40; }
+.ds-eve    { background:rgba(139,92,246,.15); border:1px solid rgba(139,92,246,.4); color:#b197fc; }
+.ds-free   { background:rgba(100,116,139,.1); border:1px solid rgba(100,116,139,.25); color:#8899aa; }
+.ds-commute{ background:rgba(107,114,128,.1); border:1px solid rgba(107,114,128,.3); color:#7a8494; }
+.ds-proto  { background:rgba(245,166,35,.1);  border:1px solid rgba(245,166,35,.3); color:#d4a030; }
+
+/* golden pulse on morning blocks */
+@keyframes goldPulse { 0%,100%{box-shadow:0 0 0 0 rgba(245,166,35,0);} 50%{box-shadow:0 0 8px 2px rgba(245,166,35,.25);} }
+.ds-gold { animation:goldPulse 3s ease-in-out infinite; }
+
+/* stat cards */
+.ds-stats-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; margin-bottom:24px; }
+.ds-stat { background:var(--card); border:1px solid var(--border2); border-radius:10px; padding:16px; }
+.ds-stat-num { font-size:26px; font-weight:900; color:#F5A623; line-height:1; margin-bottom:4px; }
+.ds-stat-title { font-size:12px; font-weight:700; color:var(--text1); margin-bottom:5px; }
+.ds-stat-body  { font-size:11px; color:var(--text3); line-height:1.55; }
+
+.ds-spotlight { background:linear-gradient(135deg,rgba(6,182,212,.08),rgba(6,182,212,.04)); border:1.5px solid rgba(6,182,212,.4); border-radius:12px; padding:16px 20px; margin-bottom:20px; }
+.ds-spotlight-title { font-size:13px; font-weight:800; color:#22d3ee; margin-bottom:8px; }
+.ds-spotlight-body  { font-size:12px; color:var(--text2); line-height:1.65; }
+.ds-spotlight-body li { margin-bottom:5px; }
+</style>
+
+<div class="page" id="tab-schedule">
+  <div class="section-header">
+    <h1>Dynamic Scheduling</h1>
+    <p>The people who own their mornings own their weeks. Here's why — and what your ideal day looks like.</p>
+  </div>
+
+  <!-- Hero banner -->
+  <div class="ds-hero">
+    <div class="ds-hero-icon">⚡</div>
+    <div>
+      <div class="ds-hero-title">The Morning Window Is Your Highest-Leverage Asset</div>
+      <div class="ds-hero-body">Cortisol peaks 50–100% above baseline within 30 minutes of waking — your brain is sharpest, your willpower is fullest, and the world hasn't woken up yet. Every errand, workout, and task completed before 9am costs you less energy, less time, and zero crowd friction. The people still in bed are the reason stores are empty, roads are clear, and parking lots are wide open. That's your edge.</div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="ds-legend">
+    <span class="ds-pill" style="background:rgba(245,166,35,.15);border:1px solid #F5A623;color:#F5A623;">⭐ Morning Ritual</span>
+    <span class="ds-pill" style="background:rgba(6,182,212,.15);border:1px solid #06B6D4;color:#22d3ee;">🛒 Errands / Groceries</span>
+    <span class="ds-pill" style="background:rgba(59,130,246,.15);border:1px solid #3B82F6;color:#7ab3f9;">💼 Work</span>
+    <span class="ds-pill" style="background:rgba(16,185,129,.15);border:1px solid #10B981;color:#4ade9a;">💪 Gym</span>
+    <span class="ds-pill" style="background:rgba(249,115,22,.15);border:1px solid #F97316;color:#fb8f40;">🍽️ Meals</span>
+    <span class="ds-pill" style="background:rgba(139,92,246,.15);border:1px solid #8B5CF6;color:#b197fc;">🌙 Evening Ritual</span>
+    <span class="ds-pill" style="background:rgba(100,116,139,.1);border:1px solid #64748b;color:#8899aa;">🌿 Free Time</span>
+    <span class="ds-pill" style="background:rgba(15,23,42,.7);border:1px solid #1e293b;color:#475569;">😴 Sleep</span>
+  </div>
+
+  <!-- Calendar -->
+  <div class="ds-cal-wrap">
+    <!-- Header row -->
+    <div class="ds-cal-head">
+      <div class="ds-cal-head-time"></div>
+      <div class="ds-cal-head-day"><div class="ds-day-name">Mon</div><div class="ds-day-sub">Workday</div></div>
+      <div class="ds-cal-head-day"><div class="ds-day-name">Tue</div><div class="ds-day-sub">Workday</div></div>
+      <div class="ds-cal-head-day"><div class="ds-day-name">Wed</div><div class="ds-day-sub">Workday</div></div>
+      <div class="ds-cal-head-day"><div class="ds-day-name">Thu</div><div class="ds-day-sub">Workday</div></div>
+      <div class="ds-cal-head-day"><div class="ds-day-name">Fri</div><div class="ds-day-sub">Workday</div></div>
+      <div class="ds-cal-head-day" style="background:rgba(245,166,35,.04);"><div class="ds-day-name" style="color:#F5A623;">Sat</div><div class="ds-day-sub" style="color:#d4a030;">Errand Day</div></div>
+      <div class="ds-cal-head-day" style="background:rgba(245,166,35,.04);"><div class="ds-day-name" style="color:#F5A623;">Sun</div><div class="ds-day-sub" style="color:#d4a030;">Recovery</div></div>
+    </div>
+
+    <!-- Body -->
+    <div class="ds-cal-body">
+
+      <!-- Time labels (5am–11pm, 40px/hr, total 760px... actually let's use 38px/hr = 684px for 18hrs but let me go with 42px/hr = 756px ≈ 760px) -->
+      <!-- 1hr = 42px. 5am=0, 6am=42, 7am=84, 8am=126, 9am=168, 10am=210, 11am=252, 12pm=294, 1pm=336, 2pm=378, 3pm=420, 4pm=462, 5pm=504, 6pm=546, 7pm=588, 8pm=630, 9pm=672, 10pm=714, 11pm=756 -->
+      <div class="ds-time-col">
+        <div class="ds-tl" style="top:0px;">5am</div>
+        <div class="ds-tl" style="top:42px;">6am</div>
+        <div class="ds-tl" style="top:84px;">7am</div>
+        <div class="ds-tl" style="top:126px;">8am</div>
+        <div class="ds-tl" style="top:168px;">9am</div>
+        <div class="ds-tl" style="top:210px;">10am</div>
+        <div class="ds-tl" style="top:252px;">11am</div>
+        <div class="ds-tl" style="top:294px;">12pm</div>
+        <div class="ds-tl" style="top:336px;">1pm</div>
+        <div class="ds-tl" style="top:378px;">2pm</div>
+        <div class="ds-tl" style="top:420px;">3pm</div>
+        <div class="ds-tl" style="top:462px;">4pm</div>
+        <div class="ds-tl" style="top:504px;">5pm</div>
+        <div class="ds-tl" style="top:546px;">6pm</div>
+        <div class="ds-tl" style="top:588px;">7pm</div>
+        <div class="ds-tl" style="top:630px;">8pm</div>
+        <div class="ds-tl" style="top:672px;">9pm</div>
+        <div class="ds-tl" style="top:714px;">10pm</div>
+        <div class="ds-tl" style="top:756px;">11pm</div>
+      </div>
+
+      <!-- MON (same as Tue-Fri) -->
+      <div class="ds-day-col">
+        <!-- hour lines -->
+        <div class="ds-hline" style="top:0px;"></div><div class="ds-hline" style="top:42px;"></div><div class="ds-hline" style="top:84px;"></div><div class="ds-hline" style="top:126px;"></div><div class="ds-hline" style="top:168px;"></div><div class="ds-hline" style="top:210px;"></div><div class="ds-hline" style="top:252px;"></div><div class="ds-hline" style="top:294px;"></div><div class="ds-hline" style="top:336px;"></div><div class="ds-hline" style="top:378px;"></div><div class="ds-hline" style="top:420px;"></div><div class="ds-hline" style="top:462px;"></div><div class="ds-hline" style="top:504px;"></div><div class="ds-hline" style="top:546px;"></div><div class="ds-hline" style="top:588px;"></div><div class="ds-hline" style="top:630px;"></div><div class="ds-hline" style="top:672px;"></div><div class="ds-hline" style="top:714px;"></div>
+        <!-- 5:00–6:15am Sleep (63px = 1.5hr×42) -->
+        <div class="ds-blk ds-sleep" style="top:2px;height:61px;"><span class="ds-blk-label">😴 Sleep</span><span class="ds-blk-sub">5:00–6:15am</span></div>
+        <!-- 6:15–7:30am Morning Ritual (63px) -->
+        <div class="ds-blk ds-gold" style="top:65px;height:61px;"><span class="ds-blk-label">⭐ Morning Ritual</span><span class="ds-blk-sub">Bed→gym→ready</span></div>
+        <!-- 7:30–8:00am Commute (21px) -->
+        <div class="ds-blk ds-commute" style="top:128px;height:18px;"><span class="ds-blk-label">🚗 Commute</span></div>
+        <!-- 8:00am–5:00pm Work (378px = 9hr×42) -->
+        <div class="ds-blk ds-work" style="top:148px;height:354px;"><span class="ds-blk-label">💼 Work</span><span class="ds-blk-sub">8am–5pm</span><span class="ds-blk-sub" style="margin-top:4px;opacity:.5;">Deep work early,<br>meetings mid-day</span></div>
+        <!-- 5:00–6:00pm Protocol (42px) -->
+        <div class="ds-blk ds-proto" style="top:504px;height:40px;"><span class="ds-blk-label">🏃 Leave + Protocol</span></div>
+        <!-- 6:00–8:00pm Gym (84px) -->
+        <div class="ds-blk ds-gym" style="top:546px;height:82px;"><span class="ds-blk-label">💪 Gym</span><span class="ds-blk-sub">Run + lifts</span></div>
+        <!-- 8:00–9:00pm Dinner (42px) -->
+        <div class="ds-blk ds-meal" style="top:630px;height:40px;"><span class="ds-blk-label">🍽️ Dinner</span></div>
+        <!-- 9:00–10:45pm Evening (105min = 73.5px) -->
+        <div class="ds-blk ds-eve" style="top:672px;height:72px;"><span class="ds-blk-label">🌙 Evening Ritual</span><span class="ds-blk-sub">Wind down → sleep</span></div>
+        <!-- 10:45pm+ Sleep -->
+        <div class="ds-blk ds-sleep" style="top:746px;height:12px;"></div>
+      </div>
+
+      <!-- TUE -->
+      <div class="ds-day-col">
+        <div class="ds-hline" style="top:0px;"></div><div class="ds-hline" style="top:42px;"></div><div class="ds-hline" style="top:84px;"></div><div class="ds-hline" style="top:126px;"></div><div class="ds-hline" style="top:168px;"></div><div class="ds-hline" style="top:210px;"></div><div class="ds-hline" style="top:252px;"></div><div class="ds-hline" style="top:294px;"></div><div class="ds-hline" style="top:336px;"></div><div class="ds-hline" style="top:378px;"></div><div class="ds-hline" style="top:420px;"></div><div class="ds-hline" style="top:462px;"></div><div class="ds-hline" style="top:504px;"></div><div class="ds-hline" style="top:546px;"></div><div class="ds-hline" style="top:588px;"></div><div class="ds-hline" style="top:630px;"></div><div class="ds-hline" style="top:672px;"></div><div class="ds-hline" style="top:714px;"></div>
+        <div class="ds-blk ds-sleep"   style="top:2px;height:61px;"><span class="ds-blk-label">😴 Sleep</span><span class="ds-blk-sub">5:00–6:15am</span></div>
+        <div class="ds-blk ds-gold"    style="top:65px;height:61px;"><span class="ds-blk-label">⭐ Morning Ritual</span><span class="ds-blk-sub">6:15–7:30am</span></div>
+        <div class="ds-blk ds-commute" style="top:128px;height:18px;"><span class="ds-blk-label">🚗 Commute</span></div>
+        <div class="ds-blk ds-work"    style="top:148px;height:354px;"><span class="ds-blk-label">💼 Work</span><span class="ds-blk-sub">8am–5pm</span></div>
+        <div class="ds-blk ds-proto"   style="top:504px;height:40px;"><span class="ds-blk-label">🏃 Leave + Protocol</span></div>
+        <div class="ds-blk ds-gym"     style="top:546px;height:82px;"><span class="ds-blk-label">💪 Gym</span><span class="ds-blk-sub">Run + lifts</span></div>
+        <div class="ds-blk ds-meal"    style="top:630px;height:40px;"><span class="ds-blk-label">🍽️ Dinner</span></div>
+        <div class="ds-blk ds-eve"     style="top:672px;height:72px;"><span class="ds-blk-label">🌙 Evening Ritual</span></div>
+        <div class="ds-blk ds-sleep"   style="top:746px;height:12px;"></div>
+      </div>
+
+      <!-- WED -->
+      <div class="ds-day-col">
+        <div class="ds-hline" style="top:0px;"></div><div class="ds-hline" style="top:42px;"></div><div class="ds-hline" style="top:84px;"></div><div class="ds-hline" style="top:126px;"></div><div class="ds-hline" style="top:168px;"></div><div class="ds-hline" style="top:210px;"></div><div class="ds-hline" style="top:252px;"></div><div class="ds-hline" style="top:294px;"></div><div class="ds-hline" style="top:336px;"></div><div class="ds-hline" style="top:378px;"></div><div class="ds-hline" style="top:420px;"></div><div class="ds-hline" style="top:462px;"></div><div class="ds-hline" style="top:504px;"></div><div class="ds-hline" style="top:546px;"></div><div class="ds-hline" style="top:588px;"></div><div class="ds-hline" style="top:630px;"></div><div class="ds-hline" style="top:672px;"></div><div class="ds-hline" style="top:714px;"></div>
+        <div class="ds-blk ds-sleep"   style="top:2px;height:61px;"><span class="ds-blk-label">😴 Sleep</span><span class="ds-blk-sub">5:00–6:15am</span></div>
+        <div class="ds-blk ds-gold"    style="top:65px;height:61px;"><span class="ds-blk-label">⭐ Morning Ritual</span><span class="ds-blk-sub">6:15–7:30am</span></div>
+        <div class="ds-blk ds-commute" style="top:128px;height:18px;"><span class="ds-blk-label">🚗 Commute</span></div>
+        <div class="ds-blk ds-work"    style="top:148px;height:354px;"><span class="ds-blk-label">💼 Work</span><span class="ds-blk-sub">8am–5pm</span><span class="ds-blk-sub" style="margin-top:4px;opacity:.5;">Mid-week push —<br>heaviest deal work</span></div>
+        <div class="ds-blk ds-proto"   style="top:504px;height:40px;"><span class="ds-blk-label">🏃 Leave + Protocol</span></div>
+        <div class="ds-blk ds-gym"     style="top:546px;height:82px;"><span class="ds-blk-label">💪 Gym</span><span class="ds-blk-sub">Run + lifts</span></div>
+        <div class="ds-blk ds-meal"    style="top:630px;height:40px;"><span class="ds-blk-label">🍽️ Dinner</span></div>
+        <div class="ds-blk ds-eve"     style="top:672px;height:72px;"><span class="ds-blk-label">🌙 Evening Ritual</span></div>
+        <div class="ds-blk ds-sleep"   style="top:746px;height:12px;"></div>
+      </div>
+
+      <!-- THU -->
+      <div class="ds-day-col">
+        <div class="ds-hline" style="top:0px;"></div><div class="ds-hline" style="top:42px;"></div><div class="ds-hline" style="top:84px;"></div><div class="ds-hline" style="top:126px;"></div><div class="ds-hline" style="top:168px;"></div><div class="ds-hline" style="top:210px;"></div><div class="ds-hline" style="top:252px;"></div><div class="ds-hline" style="top:294px;"></div><div class="ds-hline" style="top:336px;"></div><div class="ds-hline" style="top:378px;"></div><div class="ds-hline" style="top:420px;"></div><div class="ds-hline" style="top:462px;"></div><div class="ds-hline" style="top:504px;"></div><div class="ds-hline" style="top:546px;"></div><div class="ds-hline" style="top:588px;"></div><div class="ds-hline" style="top:630px;"></div><div class="ds-hline" style="top:672px;"></div><div class="ds-hline" style="top:714px;"></div>
+        <div class="ds-blk ds-sleep"   style="top:2px;height:61px;"><span class="ds-blk-label">😴 Sleep</span><span class="ds-blk-sub">5:00–6:15am</span></div>
+        <div class="ds-blk ds-gold"    style="top:65px;height:61px;"><span class="ds-blk-label">⭐ Morning Ritual</span><span class="ds-blk-sub">6:15–7:30am</span></div>
+        <div class="ds-blk ds-commute" style="top:128px;height:18px;"><span class="ds-blk-label">🚗 Commute</span></div>
+        <div class="ds-blk ds-work"    style="top:148px;height:354px;"><span class="ds-blk-label">💼 Work</span><span class="ds-blk-sub">8am–5pm</span></div>
+        <div class="ds-blk ds-proto"   style="top:504px;height:40px;"><span class="ds-blk-label">🏃 Leave + Protocol</span></div>
+        <div class="ds-blk ds-gym"     style="top:546px;height:82px;"><span class="ds-blk-label">💪 Gym</span><span class="ds-blk-sub">Run + lifts</span></div>
+        <div class="ds-blk ds-meal"    style="top:630px;height:40px;"><span class="ds-blk-label">🍽️ Dinner</span></div>
+        <div class="ds-blk ds-eve"     style="top:672px;height:72px;"><span class="ds-blk-label">🌙 Evening Ritual</span></div>
+        <div class="ds-blk ds-sleep"   style="top:746px;height:12px;"></div>
+      </div>
+
+      <!-- FRI -->
+      <div class="ds-day-col">
+        <div class="ds-hline" style="top:0px;"></div><div class="ds-hline" style="top:42px;"></div><div class="ds-hline" style="top:84px;"></div><div class="ds-hline" style="top:126px;"></div><div class="ds-hline" style="top:168px;"></div><div class="ds-hline" style="top:210px;"></div><div class="ds-hline" style="top:252px;"></div><div class="ds-hline" style="top:294px;"></div><div class="ds-hline" style="top:336px;"></div><div class="ds-hline" style="top:378px;"></div><div class="ds-hline" style="top:420px;"></div><div class="ds-hline" style="top:462px;"></div><div class="ds-hline" style="top:504px;"></div><div class="ds-hline" style="top:546px;"></div><div class="ds-hline" style="top:588px;"></div><div class="ds-hline" style="top:630px;"></div><div class="ds-hline" style="top:672px;"></div><div class="ds-hline" style="top:714px;"></div>
+        <div class="ds-blk ds-sleep"   style="top:2px;height:61px;"><span class="ds-blk-label">😴 Sleep</span><span class="ds-blk-sub">5:00–6:15am</span></div>
+        <div class="ds-blk ds-gold"    style="top:65px;height:61px;"><span class="ds-blk-label">⭐ Morning Ritual</span><span class="ds-blk-sub">6:15–7:30am</span></div>
+        <div class="ds-blk ds-commute" style="top:128px;height:18px;"><span class="ds-blk-label">🚗 Commute</span></div>
+        <div class="ds-blk ds-work"    style="top:148px;height:354px;"><span class="ds-blk-label">💼 Work</span><span class="ds-blk-sub">8am–5pm</span><span class="ds-blk-sub" style="margin-top:4px;opacity:.5;">Close loops,<br>prep for next week</span></div>
+        <div class="ds-blk ds-proto"   style="top:504px;height:40px;"><span class="ds-blk-label">🏃 Leave + Protocol</span></div>
+        <div class="ds-blk ds-gym"     style="top:546px;height:82px;"><span class="ds-blk-label">💪 Gym</span><span class="ds-blk-sub">Run + lifts</span></div>
+        <div class="ds-blk ds-meal"    style="top:630px;height:40px;"><span class="ds-blk-label">🍽️ Dinner</span></div>
+        <div class="ds-blk ds-free"    style="top:672px;height:72px;"><span class="ds-blk-label">🌿 Wind Down</span><span class="ds-blk-sub">You earned it</span></div>
+        <div class="ds-blk ds-sleep"   style="top:746px;height:12px;"></div>
+      </div>
+
+      <!-- SAT (errand day) -->
+      <div class="ds-day-col" style="background:rgba(245,166,35,.02);">
+        <div class="ds-hline" style="top:0px;"></div><div class="ds-hline" style="top:42px;"></div><div class="ds-hline" style="top:84px;"></div><div class="ds-hline" style="top:126px;"></div><div class="ds-hline" style="top:168px;"></div><div class="ds-hline" style="top:210px;"></div><div class="ds-hline" style="top:252px;"></div><div class="ds-hline" style="top:294px;"></div><div class="ds-hline" style="top:336px;"></div><div class="ds-hline" style="top:378px;"></div><div class="ds-hline" style="top:420px;"></div><div class="ds-hline" style="top:462px;"></div><div class="ds-hline" style="top:504px;"></div><div class="ds-hline" style="top:546px;"></div><div class="ds-hline" style="top:588px;"></div><div class="ds-hline" style="top:630px;"></div><div class="ds-hline" style="top:672px;"></div><div class="ds-hline" style="top:714px;"></div>
+        <!-- 5:00–7:00am Sleep (84px = 2hr) -->
+        <div class="ds-blk ds-sleep"   style="top:2px;height:82px;"><span class="ds-blk-label">😴 Sleep</span><span class="ds-blk-sub">5:00–7:00am</span></div>
+        <!-- 7:00–8:30am Morning Ritual (63px = 1.5hr) -->
+        <div class="ds-blk ds-gold"    style="top:86px;height:61px;"><span class="ds-blk-label">⭐ Morning Ritual</span><span class="ds-blk-sub">7:00–8:30am</span></div>
+        <!-- 8:30–11:00am Errands (105px = 2.5hr) -->
+        <div class="ds-blk ds-errand"  style="top:149px;height:103px;"><span class="ds-blk-label">🛒 Groceries + Errands</span><span class="ds-blk-sub">8:30–11am</span><span class="ds-blk-sub" style="margin-top:4px;opacity:.65;">Stores empty.<br>Parking easy.<br>Done in 45 min.</span></div>
+        <!-- 11am–1pm Gym (84px) -->
+        <div class="ds-blk ds-gym"     style="top:254px;height:82px;"><span class="ds-blk-label">💪 Gym</span><span class="ds-blk-sub">11am–1pm</span></div>
+        <!-- 1–3pm Meal Prep (84px) -->
+        <div class="ds-blk ds-meal"    style="top:338px;height:82px;"><span class="ds-blk-label">🍽️ Meal Prep + Lunch</span><span class="ds-blk-sub">1–3pm</span></div>
+        <!-- 3–6pm Free Time (126px) -->
+        <div class="ds-blk ds-free"    style="top:422px;height:124px;"><span class="ds-blk-label">🌿 Free Time</span><span class="ds-blk-sub">3–6pm</span><span class="ds-blk-sub" style="margin-top:4px;opacity:.6;">Everything's done.<br>You earned this.</span></div>
+        <!-- 6–7:30pm Dinner (63px) -->
+        <div class="ds-blk ds-meal"    style="top:548px;height:61px;"><span class="ds-blk-label">🍽️ Dinner</span><span class="ds-blk-sub">6–7:30pm</span></div>
+        <!-- 7:30–10:45pm Evening Ritual (135px) -->
+        <div class="ds-blk ds-eve"     style="top:611px;height:133px;"><span class="ds-blk-label">🌙 Evening Ritual</span><span class="ds-blk-sub">7:30–10:45pm</span></div>
+        <div class="ds-blk ds-sleep"   style="top:746px;height:12px;"></div>
+      </div>
+
+      <!-- SUN (recovery day) -->
+      <div class="ds-day-col" style="background:rgba(245,166,35,.02);">
+        <div class="ds-hline" style="top:0px;"></div><div class="ds-hline" style="top:42px;"></div><div class="ds-hline" style="top:84px;"></div><div class="ds-hline" style="top:126px;"></div><div class="ds-hline" style="top:168px;"></div><div class="ds-hline" style="top:210px;"></div><div class="ds-hline" style="top:252px;"></div><div class="ds-hline" style="top:294px;"></div><div class="ds-hline" style="top:336px;"></div><div class="ds-hline" style="top:378px;"></div><div class="ds-hline" style="top:420px;"></div><div class="ds-hline" style="top:462px;"></div><div class="ds-hline" style="top:504px;"></div><div class="ds-hline" style="top:546px;"></div><div class="ds-hline" style="top:588px;"></div><div class="ds-hline" style="top:630px;"></div><div class="ds-hline" style="top:672px;"></div><div class="ds-hline" style="top:714px;"></div>
+        <!-- 5:00–7:30am Sleep (105px) -->
+        <div class="ds-blk ds-sleep"   style="top:2px;height:103px;"><span class="ds-blk-label">😴 Sleep</span><span class="ds-blk-sub">5:00–7:30am</span></div>
+        <!-- 7:30–9am Morning Ritual (63px) -->
+        <div class="ds-blk ds-gold"    style="top:107px;height:61px;"><span class="ds-blk-label">⭐ Morning Ritual</span><span class="ds-blk-sub">7:30–9am</span></div>
+        <!-- 9–10:30am Prep / Admin (63px) -->
+        <div class="ds-blk ds-errand"  style="top:170px;height:61px;"><span class="ds-blk-label">📋 Prep + Admin</span><span class="ds-blk-sub">Week ahead review</span></div>
+        <!-- 10:30am–12:30pm Gym (84px) -->
+        <div class="ds-blk ds-gym"     style="top:233px;height:84px;"><span class="ds-blk-label">💪 Gym / Walk</span><span class="ds-blk-sub">10:30am–12:30pm</span></div>
+        <!-- 12:30–2:30pm Lunch + Rest (84px) -->
+        <div class="ds-blk ds-meal"    style="top:319px;height:84px;"><span class="ds-blk-label">🍽️ Lunch + Rest</span><span class="ds-blk-sub">12:30–2:30pm</span></div>
+        <!-- 2:30–5:30pm Free Time (126px) -->
+        <div class="ds-blk ds-free"    style="top:405px;height:124px;"><span class="ds-blk-label">🌿 Recovery Time</span><span class="ds-blk-sub">2:30–5:30pm</span><span class="ds-blk-sub" style="margin-top:4px;opacity:.6;">Recharge. Read.<br>Sunday done by noon.</span></div>
+        <!-- 5:30–7pm Dinner Prep (63px) -->
+        <div class="ds-blk ds-meal"    style="top:531px;height:61px;"><span class="ds-blk-label">🍽️ Dinner</span><span class="ds-blk-sub">5:30–7pm</span></div>
+        <!-- 7–10:45pm Evening + Week Prep (155px) -->
+        <div class="ds-blk ds-eve"     style="top:594px;height:150px;"><span class="ds-blk-label">🌙 Evening + Week Prep</span><span class="ds-blk-sub">7–10:45pm</span><span class="ds-blk-sub" style="margin-top:4px;opacity:.6;">Win Sunday evening,<br>win Monday morning.</span></div>
+        <div class="ds-blk ds-sleep"   style="top:746px;height:12px;"></div>
+      </div>
+
+    </div><!-- end ds-cal-body -->
+  </div><!-- end ds-cal-wrap -->
+
+  <!-- Weekend spotlight -->
+  <div class="ds-spotlight">
+    <div class="ds-spotlight-title">🛒 The Weekend Morning Edge — Why 8:30am Errands Beat 11am Every Time</div>
+    <div class="ds-spotlight-body">
+      <ul style="margin:0;padding-left:18px;">
+        <li><strong>Stores are 60–70% less crowded</strong> before 9am on weekends. No cart traffic, no checkout lines, no parking lot circling.</li>
+        <li><strong>Weekend traffic peaks between 11am–2pm.</strong> Hitting errands at 8:30am means a 30-minute trip instead of 90.</li>
+        <li><strong>You're sharper.</strong> Cognitive performance is measurably higher in the 2–4 hours after waking. Shopping lists, price comparisons, route planning — all done faster and with less frustration.</li>
+        <li><strong>The afternoon is yours.</strong> When errands are done by 10:30am, the rest of the weekend is free time — not obligation. That's the psychological payoff.</li>
+        <li><strong>The "lazy" crowd wakes at 10am.</strong> You're already home, groceries put away, gym done, before most people have had breakfast.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <h2 style="font-size:14px;font-weight:800;color:var(--text1);margin-bottom:12px;letter-spacing:.02em;">THE SCIENCE BEHIND MORNING DOMINANCE</h2>
+  <div class="ds-stats-grid">
+
+    <div class="ds-stat">
+      <div class="ds-stat-num">50–100%</div>
+      <div class="ds-stat-title">Cortisol Spike at Wake-Up</div>
+      <div class="ds-stat-body">The Cortisol Awakening Response (CAR) — a natural surge in cortisol within 30 min of waking — sharpens alertness, boosts motivation, and primes your brain for high-stakes thinking. It's your body's built-in performance enhancer. By 2pm, it's cut in half.</div>
+    </div>
+
+    <div class="ds-stat">
+      <div class="ds-stat-num">65%</div>
+      <div class="ds-stat-title">Drop in Decision Quality by Afternoon</div>
+      <div class="ds-stat-body">Research from Columbia and Cornell shows that decision-making quality degrades roughly 65% by late afternoon. Judges grant parole less. Doctors prescribe incorrectly more. Willpower is a finite resource — spend it in the morning on things that matter.</div>
+    </div>
+
+    <div class="ds-stat">
+      <div class="ds-stat-num">3×</div>
+      <div class="ds-stat-title">Higher Habit Completion Rate</div>
+      <div class="ds-stat-body">BJ Fogg's Tiny Habits research shows routines executed before environmental interference — notifications, other people's needs, news — complete at 3x the rate of afternoon habits. Morning is a clean slate. Afternoon is noise.</div>
+    </div>
+
+    <div class="ds-stat">
+      <div class="ds-stat-num">75%</div>
+      <div class="ds-stat-title">More Consistent Exercisers</div>
+      <div class="ds-stat-body">A study published in the Journal of Obesity found that morning exercisers were 75% more likely to maintain their workout routine long-term. Evening gym-goers cited work fatigue, social obligations, and low motivation as common skip reasons. Morning removes all three excuses.</div>
+    </div>
+
+    <div class="ds-stat">
+      <div class="ds-stat-num">+20%</div>
+      <div class="ds-stat-title">Higher Proactivity Scores</div>
+      <div class="ds-stat-body">A Harvard Business Review study found morning people scored 20% higher on proactivity scales, were more likely to anticipate and prevent problems, and self-reported greater career success. Early rising correlates with taking initiative — not just being awake, but being ahead.</div>
+    </div>
+
+    <div class="ds-stat">
+      <div class="ds-stat-num">90 min</div>
+      <div class="ds-stat-title">Saved Per Weekend Errand Run</div>
+      <div class="ds-stat-body">The average Saturday grocery trip takes 90–120 minutes when done between 11am–2pm (peak hours). Done before 9am: under 30 minutes. That's 60–90 minutes of your weekend back — every single week. Over a year, that's 50+ hours of free time you buy yourself by simply going earlier.</div>
+    </div>
+
+  </div>
+
+  <!-- Closing quote -->
+  <div style="text-align:center;padding:20px 16px;border-top:1px solid var(--border2);margin-top:8px;">
+    <div style="font-size:15px;font-weight:700;color:var(--text1);margin-bottom:6px;">"The early morning has gold in its mouth."</div>
+    <div style="font-size:11px;color:var(--text3);">— Benjamin Franklin &nbsp;·&nbsp; The people still in bed are the reason your Saturday morning is so easy.</div>
+  </div>
+
+</div><!-- end tab-schedule -->
+
