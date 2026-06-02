@@ -2060,6 +2060,16 @@
   async function saveReflections() {
     const reflectionText = (document.getElementById('eod-reflection')?.value || '').trim();
 
+    // Immediate button feedback so user knows click registered
+    const btn = document.querySelector('.reflect-save-btn');
+    if (btn) { btn.textContent = '⏳ Saving…'; btn.disabled = true; }
+
+    // Fire Claude analysis immediately — don't wait for Gist
+    if (reflectionText.length > 20) {
+      const todayDate = todayEntryDate();
+      analyzeReflection(reflectionText, todayDate);
+    }
+
     // Build today's entry from the form
     const todayEntry = buildTodayEntry();
     const todayDate = todayEntryDate();
@@ -2067,10 +2077,14 @@
     reflections.unshift(todayEntry);
     if (reflections.length > 90) reflections.length = 90;
 
-    // Write to Gist (merge with tasks)
+    // Write to Gist with timeout so it never hangs
     showReflectSync('Saving…', 'var(--text3)');
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+
       const res = await fetch(GIST_URL, {
+        signal: controller.signal,
         headers: { 'Authorization': `Bearer ${GIST_TOKEN}`, 'Accept': 'application/vnd.github+json' }
       });
       const data = await res.json();
@@ -2086,16 +2100,15 @@
         },
         body: JSON.stringify({ files: { [GIST_FILE]: { content: JSON.stringify(merged) } } })
       });
+      clearTimeout(timeout);
       showReflectSync('✅ Saved', 'var(--green)');
       renderReflectLog();
     } catch(e) {
-      showReflectSync('⚠️ Save failed', 'var(--red)');
+      showReflectSync(e.name === 'AbortError' ? '⚠️ Save timed out' : '⚠️ Save failed', 'var(--red)');
     }
 
-    // Fire Claude analysis if there's reflection text
-    if (reflectionText.length > 20) {
-      analyzeReflection(reflectionText, todayDate);
-    }
+    // Restore button
+    if (btn) { btn.textContent = '💾 Save today\'s reflection'; btn.disabled = false; }
   }
 
   async function analyzeReflection(text, date) {
