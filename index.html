@@ -28,8 +28,10 @@
   /* NAV */
   .nav { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
   .nav-inner { max-width: 900px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 0; }
-  .nav-brand { font-size: 15px; font-weight: 600; color: var(--text); padding: 16px 20px 16px 0; border-right: 1px solid var(--border2); margin-right: 8px; white-space: nowrap; }
+  .nav-brand { font-size: 15px; font-weight: 600; color: var(--text); padding: 16px 20px 16px 0; border-right: 1px solid var(--border2); margin-right: 8px; white-space: nowrap; display: flex; align-items: center; gap: 9px; }
   .nav-brand span { color: var(--text3); font-weight: 400; }
+  .nav-logo { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .nav-logo svg { width: 16px; height: 16px; }
   .tab { padding: 18px 16px; font-size: 13px; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; transition: color 0.15s; }
   .tab:hover { color: var(--text); }
   .tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
@@ -431,7 +433,27 @@
 
 <nav class="nav">
   <div class="nav-inner">
-    <div class="nav-brand">Life OS <span>· Tom</span></div>
+    <div class="nav-brand">
+      <div class="nav-logo">
+        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Left hemisphere -->
+          <path d="M10 15.5 C10 15.5 4.5 14.5 3.5 11 C2.8 8.5 3.5 6.5 5 5.5 C5 5.5 4.8 3.5 6.5 3 C8 2.5 9 3.5 9 3.5 C9 3.5 9.2 2 10 2" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Right hemisphere -->
+          <path d="M10 15.5 C10 15.5 15.5 14.5 16.5 11 C17.2 8.5 16.5 6.5 15 5.5 C15 5.5 15.2 3.5 13.5 3 C12 2.5 11 3.5 11 3.5 C11 3.5 10.8 2 10 2" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Center line -->
+          <path d="M10 2 L10 15.5" stroke="white" stroke-width="0.8" stroke-linecap="round" stroke-dasharray="1.5 1.5" stroke-opacity="0.5"/>
+          <!-- Left folds -->
+          <path d="M5.5 8 C6.5 7.5 7.5 8.5 7 9.5" stroke="white" stroke-width="1" stroke-linecap="round" stroke-opacity="0.8"/>
+          <path d="M5 11 C6 10.5 7.5 11 7.5 12" stroke="white" stroke-width="1" stroke-linecap="round" stroke-opacity="0.8"/>
+          <!-- Right folds -->
+          <path d="M14.5 8 C13.5 7.5 12.5 8.5 13 9.5" stroke="white" stroke-width="1" stroke-linecap="round" stroke-opacity="0.8"/>
+          <path d="M15 11 C14 10.5 12.5 11 12.5 12" stroke="white" stroke-width="1" stroke-linecap="round" stroke-opacity="0.8"/>
+          <!-- Bottom stem -->
+          <path d="M8 15.5 C8 16.5 9 17 10 17 C11 17 12 16.5 12 15.5" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-opacity="0.7"/>
+        </svg>
+      </div>
+      Life OS <span>· Tom</span>
+    </div>
     <div class="tab active" onclick="showTab('daily')">Daily</div>
     <div class="tab" onclick="showTab('system')">My System</div>
     <div class="tab" onclick="showTab('goals')">Goals</div>
@@ -561,7 +583,7 @@
     <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Vitamin D + Arey hair pill (AM)</div><div class="habit-why">Daily — not when you remember. Both matter.</div></div><span class="tag tag-green">Health</span></div>
     <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">5½-minute shower — set a timer, get out when it goes off</div><div class="habit-why">↳ The warm water feels good, but sitting in it for 15 min bleeds your morning. Timer on, no exceptions.</div></div><span class="tag tag-red">Discipline</span></div>
     <div class="habit-row office-only" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Pack lunch from fridge into bag</div><div class="habit-why">↳ Bring the container home at end of day.</div></div><span class="tag tag-blue">Prep</span></div>
-    <div class="habit-row office-only" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Call Uber at 7:15am</div><div class="habit-why">↳ The earlier you order, the cheaper the ride. Don't wait until you're rushing out the door.</div></div><span class="tag tag-blue">Prep</span></div>
+    <div class="habit-row office-only" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">When the morning shower timer hits 4 min — call the Uber</div><div class="habit-why">↳ The earlier you order, the cheaper the ride. Don't wait until you're rushing out the door.</div></div><span class="tag tag-blue">Prep</span></div>
     <div class="habit-row office-only" onclick="toggle(this)" style="background:linear-gradient(135deg,#FFFBE6,#FEF3C7);border-radius:6px;border:1.5px solid #F59E0B;">
       <div class="hcheck" style="border-color:#F59E0B;background:#FEF3C7;"></div>
       <div class="habit-content"><div class="habit-name"><span class="reward-medal">🥇</span><strong>Reward:</strong> Starbucks coffee at 7:45am. You showed up — you earned it.</div></div>
@@ -703,6 +725,19 @@
       <div class="sg-item"><div class="sg-num score-good">70–84%</div><div class="sg-label">Strong day</div></div>
       <div class="sg-item"><div class="sg-num score-avg">50–69%</div><div class="sg-label">Average day</div></div>
       <div class="sg-item"><div class="sg-num score-low">0–49%</div><div class="sg-label">Below baseline</div></div>
+    </div>
+  </div>
+
+  <!-- Habit Trend Chart -->
+  <div class="card" id="habit-chart-card" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <div>
+        <div class="card-title" style="margin-bottom:2px;">Habit streak tracker</div>
+        <div style="font-size:11px; color:var(--text3);" id="chart-summary"></div>
+      </div>
+    </div>
+    <div style="position:relative; height:180px;">
+      <canvas id="habit-chart"></canvas>
     </div>
   </div>
 
@@ -1338,6 +1373,7 @@
     else if (pct >= 70) scoreEl.style.color = '#3B6D11';
     else if (pct >= 50) scoreEl.style.color = 'var(--amber)';
     else scoreEl.style.color = 'var(--red)';
+    renderHabitChart();
   }
 
   function toggleDayMode() {
@@ -1679,6 +1715,106 @@
     ).join('');
   }
 
+  let _habitChart = null;
+
+  function renderHabitChart() {
+    const log = loadHlog().slice().reverse(); // oldest → newest
+    const card = document.getElementById('habit-chart-card');
+    const canvas = document.getElementById('habit-chart');
+    const summaryEl = document.getElementById('chart-summary');
+    if (!canvas) return;
+
+    if (log.length < 2) {
+      if (card) card.style.display = 'none';
+      return;
+    }
+    if (card) card.style.display = 'block';
+
+    const labels = log.map(e => {
+      const parts = e.date.split(' ');
+      return parts[0] + ' ' + parseInt(parts[1]);
+    });
+    const doneData = log.map(e => e.done);
+    const totalData = log.map(e => e.total);
+
+    // Summary
+    const latest = log[log.length - 1];
+    const avg = Math.round(log.reduce((a, e) => a + e.done, 0) / log.length);
+    const best = Math.max(...log.map(e => e.done));
+    if (summaryEl) summaryEl.textContent = log.length + ' days · avg ' + avg + ' habits · best ' + best + ' habits';
+
+    // Gradient fill
+    const ctx = canvas.getContext('2d');
+    const grad = ctx.createLinearGradient(0, 0, 0, 180);
+    grad.addColorStop(0, 'rgba(99,102,241,0.25)');
+    grad.addColorStop(1, 'rgba(99,102,241,0)');
+
+    const data = {
+      labels,
+      datasets: [
+        {
+          label: 'Habits completed',
+          data: doneData,
+          borderColor: '#6366f1',
+          backgroundColor: grad,
+          borderWidth: 2.5,
+          pointBackgroundColor: doneData.map((v, i) => {
+            const pct = totalData[i] > 0 ? v / totalData[i] : 0;
+            return pct >= 0.85 ? '#22c55e' : pct >= 0.70 ? '#65a30d' : pct >= 0.50 ? '#f59e0b' : '#ef4444';
+          }),
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          fill: true,
+          tension: 0.4,
+        }
+      ]
+    };
+
+    if (_habitChart) {
+      _habitChart.data = data;
+      _habitChart.update('none');
+    } else {
+      _habitChart = new Chart(canvas, {
+        type: 'line',
+        data,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(15,15,25,0.85)',
+              titleColor: '#e5e7eb',
+              bodyColor: '#9ca3af',
+              padding: 10,
+              cornerRadius: 8,
+              callbacks: {
+                title: items => items[0].label,
+                label: item => {
+                  const i = item.dataIndex;
+                  const pct = totalData[i] > 0 ? Math.round((doneData[i] / totalData[i]) * 100) : 0;
+                  return ' ' + doneData[i] + ' / ' + totalData[i] + ' habits (' + pct + '%)';
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(0,0,0,0.05)' },
+              ticks: { font: { size: 10 }, color: '#9ca3af', maxTicksLimit: 10 }
+            },
+            y: {
+              grid: { color: 'rgba(0,0,0,0.05)' },
+              ticks: { font: { size: 10 }, color: '#9ca3af', stepSize: 1, precision: 0 },
+              min: 0,
+              suggestedMax: Math.max(...totalData) + 1
+            }
+          }
+        }
+      });
+    }
+  }
+
   function toggleHlog() {
     const body    = document.getElementById('hlog-body');
     const chevron = document.getElementById('hlog-chevron');
@@ -1727,7 +1863,8 @@
   setDate();
   loadHabits();    // restore habit checkboxes (from file or localStorage)
   initFileAccess(); // reconnect File System API handle if previously granted
-  renderHlog();    // render daily habit log on load
+  renderHlog();       // render daily habit log on load
+  renderHabitChart(); // render streak chart on load
 
   // ── TASKS (GitHub Gist sync) ────────────────────────
   let tasks = [];
@@ -2159,7 +2296,6 @@
 
     // Build today's entry from the form
     const todayEntry = buildTodayEntry();
-    const todayDate = todayEntryDate();
     reflections = reflections.filter(r => r.date !== todayDate);
     reflections.unshift(todayEntry);
     if (reflections.length > 90) reflections.length = 90;
