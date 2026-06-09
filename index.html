@@ -123,12 +123,18 @@
   @media (max-width: 500px) { .grocery-grid { grid-template-columns: 1fr; } }
   .g-section { background: var(--surface2); border-radius: var(--radius-sm); padding: 12px 14px; }
   .g-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3); margin-bottom: 8px; }
-  .g-item { font-size: 12px; color: var(--text); padding: 4px 0; border-bottom: 1px solid var(--border2); display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .g-item { font-size: 12px; color: var(--text); padding: 6px 0; border-bottom: 1px solid var(--border2); display: flex; align-items: center; gap: 6px; cursor: pointer; flex-wrap: wrap; }
   .g-item:last-child { border-bottom: none; }
-  .g-item.checked { text-decoration: line-through; color: var(--text3); }
+  .g-item.checked .g-name { text-decoration: line-through; color: var(--text3); }
+  .g-name { flex: 1; }
   .g-box { width: 13px; height: 13px; border: 1.5px solid #ccc; border-radius: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
   .g-box.checked { background: var(--green); border-color: var(--green); }
   .g-box.checked::after { content: '✓'; font-size: 9px; color: white; line-height: 1; }
+  .g-date { font-size: 10px; color: var(--text3); white-space: nowrap; }
+  .g-bar-wrap { width: 100%; height: 4px; background: var(--border2); border-radius: 2px; margin-top: 3px; }
+  .g-bar { height: 4px; border-radius: 2px; transition: width 0.4s; }
+  .g-reset-btn { margin-top: 12px; font-size: 12px; font-weight: 600; background: none; border: 1.5px solid var(--border); border-radius: 6px; padding: 6px 14px; cursor: pointer; color: var(--text2); }
+  .g-reset-btn:hover { background: var(--surface2); }
   /* ALCOHOL */
   .spirit-row { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border2); align-items: flex-start; }
   .spirit-row:last-child { border-bottom: none; }
@@ -1000,46 +1006,49 @@
     <p style="font-size:12px; color:var(--text2); margin-bottom:12px; line-height:1.6;">• When you cook, always cook at least 3 meals in a single session — never cook for just one meal. The same goes for smoothie packs — always prep at least 3 at a time. Batching cuts cleanup to once instead of multiple times.</p>
     <div class="grocery-grid">
       <div class="g-section"><div class="g-label">Proteins</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Salmon fillets (1 lb)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Ground turkey (1.5 lbs)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Chicken breasts (1.5 lbs)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Eggs (1 dozen)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Greek yogurt plain (large tub)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Green lentils (1 bag)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Black beans (2 cans)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Protein powder (if needed)</div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-salmon" data-days="3"><div class="g-box"></div><span class="g-name">Salmon fillets (1 lb)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-turkey" data-days="3"><div class="g-box"></div><span class="g-name">Ground turkey (1.5 lbs)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-chicken" data-days="3"><div class="g-box"></div><span class="g-name">Chicken breasts (1.5 lbs)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-eggs" data-days="21"><div class="g-box"></div><span class="g-name">Eggs (1 dozen)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-yogurt" data-days="14"><div class="g-box"></div><span class="g-name">Greek yogurt plain (large tub)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-lentils" data-days="365"><div class="g-box"></div><span class="g-name">Green lentils (1 bag)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-beans" data-days="365"><div class="g-box"></div><span class="g-name">Black beans (2 cans)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-protein" data-days="180"><div class="g-box"></div><span class="g-name">Protein powder (if needed)</span></div>
       </div>
       <div class="g-section"><div class="g-label">Produce</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Baby spinach (large bag)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Broccoli (1 head)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Asparagus (1 bunch)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Sweet potatoes (3–4)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Arugula (small bag)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Bananas (5–6)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Avocados (3)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Lemons (3) + fresh ginger</div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-spinach" data-days="5"><div class="g-box"></div><span class="g-name">Baby spinach (large bag)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-broccoli" data-days="4"><div class="g-box"></div><span class="g-name">Broccoli (1 head)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-asparagus" data-days="4"><div class="g-box"></div><span class="g-name">Asparagus (1 bunch)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-sweetpot" data-days="14"><div class="g-box"></div><span class="g-name">Sweet potatoes (3–4)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-arugula" data-days="5"><div class="g-box"></div><span class="g-name">Arugula (small bag)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-bananas" data-days="5"><div class="g-box"></div><span class="g-name">Bananas (5–6)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-avocados" data-days="4"><div class="g-box"></div><span class="g-name">Avocados (3)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-lemons" data-days="21"><div class="g-box"></div><span class="g-name">Lemons (3) + fresh ginger</span></div>
       </div>
       <div class="g-section"><div class="g-label">Frozen + pantry</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Frozen blueberries — large bag (Organic 365 / Whole Foods Brand)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Frozen mixed berries (Organic 365 / Whole Foods Brand)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Pre-cooked beets (vacuum packed)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Brown rice (1 bag)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Farro (1 bag)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Rolled oats</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Walnuts + almonds (mixed bag)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Ground flaxseed + pumpkin seeds</div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-frozblue" data-days="90"><div class="g-box"></div><span class="g-name">Frozen blueberries — large bag (Organic 365 / Whole Foods Brand)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-frozberry" data-days="90"><div class="g-box"></div><span class="g-name">Frozen mixed berries (Organic 365 / Whole Foods Brand)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-beets" data-days="7"><div class="g-box"></div><span class="g-name">Pre-cooked beets (vacuum packed)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-rice" data-days="180"><div class="g-box"></div><span class="g-name">Brown rice (1 bag)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-farro" data-days="180"><div class="g-box"></div><span class="g-name">Farro (1 bag)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-oats" data-days="180"><div class="g-box"></div><span class="g-name">Rolled oats</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-nuts" data-days="60"><div class="g-box"></div><span class="g-name">Walnuts + almonds (mixed bag)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-seeds" data-days="60"><div class="g-box"></div><span class="g-name">Ground flaxseed + pumpkin seeds</span></div>
       </div>
       <div class="g-section"><div class="g-label">Fridge staples</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Almond milk (2 cartons)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Pomegranate juice (small bottle)</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Goat cheese + feta</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Hummus</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Extra virgin olive oil</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Salsa + whole wheat wraps</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Peanut butter + almond butter</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Turmeric + black pepper</div>
-        <div class="g-item" onclick="toggleG(this)"><div class="g-box"></div>Milk — 1 gallon + 1 half-gallon (bring the duffle bag, these are heavy)</div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-almondmilk" data-days="10"><div class="g-box"></div><span class="g-name">Almond milk (2 cartons)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-pomjuice" data-days="7"><div class="g-box"></div><span class="g-name">Pomegranate juice (small bottle)</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-cheese" data-days="14"><div class="g-box"></div><span class="g-name">Goat cheese + feta</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-hummus" data-days="10"><div class="g-box"></div><span class="g-name">Hummus</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-oliveoil" data-days="180"><div class="g-box"></div><span class="g-name">Extra virgin olive oil</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-salsa" data-days="7"><div class="g-box"></div><span class="g-name">Salsa + whole wheat wraps</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-pb" data-days="180"><div class="g-box"></div><span class="g-name">Peanut butter + almond butter</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-turmeric" data-days="365"><div class="g-box"></div><span class="g-name">Turmeric + black pepper</span></div>
+        <div class="g-item" onclick="toggleG(this)" data-key="g-milk" data-days="10"><div class="g-box"></div><span class="g-name">Milk — 1 gallon + 1 half-gallon (bring the duffle bag, these are heavy)</span></div>
       </div>
+    </div>
+    <div style="display:flex; justify-content:flex-end; margin-top:10px;">
+      <button class="g-reset-btn" onclick="resetGrocery()">↺ Reset grocery list</button>
     </div>
   </div>
 
@@ -1525,9 +1534,75 @@
 
   function toggleG(row) {
     const box = row.querySelector('.g-box');
+    const key = row.dataset.key;
+    const days = parseInt(row.dataset.days) || 7;
     const isDone = box.classList.contains('checked');
-    if (isDone) { box.classList.remove('checked'); row.classList.remove('checked'); }
-    else { box.classList.add('checked'); row.classList.add('checked'); }
+
+    if (isDone) {
+      box.classList.remove('checked');
+      row.classList.remove('checked');
+      try { localStorage.removeItem('lifeos_' + key); } catch(e) {}
+      const meta = row.querySelector('.g-meta');
+      if (meta) meta.remove();
+    } else {
+      box.classList.add('checked');
+      row.classList.add('checked');
+      const now = Date.now();
+      try { localStorage.setItem('lifeos_' + key, JSON.stringify({ ts: now, days })); } catch(e) {}
+      renderGroceryMeta(row, now, days);
+    }
+  }
+
+  function renderGroceryMeta(row, ts, days) {
+    const existing = row.querySelector('.g-meta');
+    if (existing) existing.remove();
+
+    const elapsed = (Date.now() - ts) / 86400000; // days elapsed
+    const pct = Math.max(0, Math.min(1, 1 - elapsed / days));
+    const dateStr = new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const daysLeft = Math.max(0, Math.ceil(days - elapsed));
+
+    let barColor = '#22c55e';
+    if (pct < 0.5) barColor = '#f59e0b';
+    if (pct < 0.2) barColor = '#ef4444';
+
+    const meta = document.createElement('div');
+    meta.className = 'g-meta';
+    meta.style.cssText = 'width:100%; display:flex; flex-direction:column; gap:2px; padding-left:19px;';
+    meta.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span class="g-date">Bought ${dateStr} · ${daysLeft}d left</span>
+        <span style="font-size:10px; color:${barColor}; font-weight:600;">${Math.round(pct*100)}% fresh</span>
+      </div>
+      <div class="g-bar-wrap"><div class="g-bar" style="width:${Math.round(pct*100)}%; background:${barColor};"></div></div>`;
+    row.appendChild(meta);
+  }
+
+  function initGrocery() {
+    document.querySelectorAll('.g-item[data-key]').forEach(row => {
+      const key = row.dataset.key;
+      try {
+        const stored = localStorage.getItem('lifeos_' + key);
+        if (!stored) return;
+        const { ts, days } = JSON.parse(stored);
+        const box = row.querySelector('.g-box');
+        box.classList.add('checked');
+        row.classList.add('checked');
+        renderGroceryMeta(row, ts, days);
+      } catch(e) {}
+    });
+  }
+
+  function resetGrocery() {
+    document.querySelectorAll('.g-item[data-key]').forEach(row => {
+      const key = row.dataset.key;
+      const box = row.querySelector('.g-box');
+      box.classList.remove('checked');
+      row.classList.remove('checked');
+      const meta = row.querySelector('.g-meta');
+      if (meta) meta.remove();
+      try { localStorage.removeItem('lifeos_' + key); } catch(e) {}
+    });
   }
 
   function resetAll() {
@@ -1855,6 +1930,7 @@
   }
 
   loadTasks(); // async — loads from localStorage instantly, then syncs from GitHub Gist
+  initGrocery(); // restore grocery check states + freshness bars from localStorage
 
   // ── RESPONSE TIME TRACKER ─────────────────────────
   const RESP_LABELS = { under2:'Under 2 min', under5:'2–5 min', under15:'5–15 min', over15:'15+ min / missed' };
@@ -2070,9 +2146,16 @@
     if (btn) { btn.textContent = '⏳ Saving…'; btn.disabled = true; }
 
     // Fire Claude analysis immediately — don't wait for Gist
-    if (reflectionText.length > 20) {
-      const todayDate = todayEntryDate();
-      analyzeReflection(reflectionText, todayDate);
+    const todayDate = todayEntryDate();
+    if (reflectionText.length > 20 || document.querySelector('[id^="hr-act-"]')?.value) {
+      // Collect hourly log entries
+      const hourLog = HOURS.map((h, i) => {
+        const activity = (document.getElementById('hr-act-' + i) || {}).value?.trim() || '';
+        const health = document.querySelector(`[data-hri="${i}"].active-good`) ? '✅ healthy'
+                     : document.querySelector(`[data-hri="${i}"].active-bad`)  ? '❌ not healthy' : '';
+        return activity ? `${h}: ${activity}${health ? ' ('+health+')' : ''}` : null;
+      }).filter(Boolean);
+      analyzeReflection(reflectionText, todayDate, hourLog);
     }
 
     // Build today's entry from the form
@@ -2116,7 +2199,7 @@
     if (btn) { btn.textContent = '💾 Save today\'s reflection'; btn.disabled = false; }
   }
 
-  async function analyzeReflection(text, date) {
+  async function analyzeReflection(text, date, hourLog = []) {
     const outputEl = document.getElementById('claude-output');
     const outputWrap = document.getElementById('claude-output-wrap');
     if (!outputEl || !outputWrap) return;
@@ -2181,7 +2264,7 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
           model: 'claude-haiku-4-5-20251001',
           max_tokens: 1200,
           system: systemPrompt,
-          messages: [{ role: 'user', content: `My reflection for ${date}:\n\n${text}` }]
+          messages: [{ role: 'user', content: `My reflection for ${date}:\n\n${text || '(no written reflection)'}${hourLog.length ? '\n\n---\nHour-by-hour log:\n' + hourLog.join('\n') : ''}` }]
         })
       });
 
