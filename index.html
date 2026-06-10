@@ -674,7 +674,6 @@
     </div><!-- /pf-wrap -->
     <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Gym — walk there (no AirPods), 2mi run, upper body</div><div class="habit-why">Already a real habit. Protect it. It's keeping your mental health stable.</div></div><span class="tag tag-green">Health</span></div>
     <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">4 Yeti Flasks of water today</div><div class="habit-why">You're at 37% of goal. Affects focus, energy, mood, pelvic floor tissue.</div></div><span class="tag tag-green">Health</span></div>
-    <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Finish dinner before 9:15pm — not while scrolling</div><div class="habit-why">Late eating + TikTok = worse sleep, less satiety, more cortisol at bedtime. Knock out a personal task on laptop during dinner instead.</div></div><span class="tag tag-green">Health</span></div>
 
     <div class="habit-group-label">Finance & focus</div>
     <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">No impulse purchases today</div><div class="habit-why">CC debt is $12k at ~25% APR. Every unplanned purchase makes it worse. $120k by 30 — zero CC debt first.</div></div><span class="tag tag-blue">Finance</span></div>
@@ -682,7 +681,6 @@
 
     <div class="habit-group-label">When I get home from work or gym</div>
     <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Take smoothie pack out of freezer — let it thaw for 20 min</div><div class="habit-why">↳ Do this the moment you walk in. By the time you've changed and settled, it's ready to blend in the morning.</div></div><span class="tag tag-green">Nutrition</span></div>
-    <div class="habit-row" onclick="toggle(this)" style="background:linear-gradient(135deg,rgba(251,191,36,.08),rgba(239,68,68,.08));border:1.5px solid rgba(251,191,36,.4);border-radius:6px;"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">⚡⚡ Hyper unpack — no doomscrolling ⚡⚡</div><div class="habit-why">↳ The second you walk in: unpack backpack, dump out gym bag and repack with tomorrow's gym clothes, lay out tomorrow's work outfit, plug in all devices to charge. Do it now — you'll never want to do it at 10:30pm. Don't sit down first. Don't open Instagram. Execute and reset.</div></div><span class="tag tag-red">Critical</span></div>
 
     <div class="habit-group-label">Evening ritual</div>
     <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Room floor clear — nothing on the floor, papers organized and stored</div><div class="habit-why">↳ Clean space = clear mind. Takes 2 minutes, pays off all morning.</div></div><span class="tag tag-blue">Mind</span></div>
@@ -738,6 +736,12 @@
     </div>
     <div style="position:relative; height:180px;">
       <canvas id="habit-chart"></canvas>
+    </div>
+    <div style="display:flex; gap:14px; margin-top:10px; font-size:11px; color:var(--text3);">
+      <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#6366f1;margin-right:4px;"></span>Office day</span>
+      <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#10b981;margin-right:4px;"></span>Day off</span>
+      <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#f59e0b;margin-right:4px;"></span>Average</span>
+      <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#ef4444;margin-right:4px;"></span>Below baseline</span>
     </div>
   </div>
 
@@ -1689,7 +1693,7 @@
     const log = loadHlog();
     // Replace today's entry if already exists
     const filtered = log.filter(e => e.date !== dateStr);
-    filtered.unshift({ date: dateStr, day: dayStr, done, total, pct, label, cls });
+    filtered.unshift({ date: dateStr, day: dayStr, done, total, pct, label, cls, dayOff: isDayOff });
     // Keep max 90 days
     if (filtered.length > 90) filtered.length = 90;
     saveHlog(filtered);
@@ -1767,9 +1771,11 @@
           backgroundColor: grad,
           borderWidth: 2.5,
           pointBackgroundColor: doneData.map((v, i) => {
+            if (log[i].dayOff) return '#10b981'; // green for day-off days
             const pct = totalData[i] > 0 ? v / totalData[i] : 0;
-            return pct >= 0.85 ? '#22c55e' : pct >= 0.70 ? '#65a30d' : pct >= 0.50 ? '#f59e0b' : '#ef4444';
+            return pct >= 0.85 ? '#6366f1' : pct >= 0.70 ? '#8b5cf6' : pct >= 0.50 ? '#f59e0b' : '#ef4444';
           }),
+          pointBorderColor: doneData.map((v, i) => log[i].dayOff ? '#10b981' : 'transparent'),
           pointRadius: 4,
           pointHoverRadius: 6,
           fill: true,
@@ -1801,7 +1807,8 @@
                 label: item => {
                   const i = item.dataIndex;
                   const pct = totalData[i] > 0 ? Math.round((doneData[i] / totalData[i]) * 100) : 0;
-                  return ' ' + doneData[i] + ' / ' + totalData[i] + ' habits (' + pct + '%)';
+                  const type = log[i].dayOff ? ' 🏖️ Day Off' : ' 📅 Office Day';
+                  return ' ' + doneData[i] + ' / ' + totalData[i] + ' habits (' + pct + '%)' + type;
                 }
               }
             }
