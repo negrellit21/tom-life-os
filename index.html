@@ -2501,7 +2501,7 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
     const today = todayEntryDate();
     const isToday = sel === today;
     if (lbl) lbl.textContent = isToday ? '(today)' : '';
-    if (btn) btn.textContent = isToday ? '💾 Save today's reflection' : '💾 Save reflection for ' + sel;
+    if (btn) btn.textContent = isToday ? "💾 Save today's reflection" : '💾 Save reflection for ' + sel;
   }
 
   function setReflectDateToday() {
