@@ -588,7 +588,7 @@
       <div class="hcheck" style="border-color:#F59E0B;background:#FEF3C7;"></div>
       <div class="habit-content"><div class="habit-name"><span class="reward-medal">🥇</span><strong>Reward:</strong> Starbucks coffee at 7:45am. You showed up — you earned it.</div></div>
     </div>
-    <div class="habit-row office-only" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">At the office by 8:00am</div><div class="habit-why">The job-saving move. Leave by 7:10am. No exceptions.</div></div><span class="tag tag-red">Critical</span></div>
+    <div class="habit-row office-only" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">In office by 7:30am for Excel training — start work at 8:00am</div><div class="habit-why">↳ 30 min of Excel training before the day starts. Leave home by 7:00am. No exceptions.</div></div><span class="tag tag-red">Critical</span></div>
 
     <div class="habit-group-label office-only">Work</div>
     <div class="habit-row office-only" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">2-minute task start rule — used at least once</div><div class="habit-why">Name the next physical action. Open the file. Type one thing. Break initiation paralysis.</div></div><span class="tag tag-amber">High</span></div>
@@ -1695,7 +1695,7 @@
     const filtered = log.filter(e => e.date !== dateStr);
     filtered.unshift({ date: dateStr, day: dayStr, done, total, pct, label, cls, dayOff: isDayOff });
     // Keep max 90 days
-    if (filtered.length > 90) filtered.length = 90;
+    if (filtered.length > 365) filtered.length = 365;
     saveHlog(filtered);
     renderHlog();
   }
@@ -2303,7 +2303,7 @@
     }
 
     // Fire Claude analysis immediately — don't wait for Gist
-    const todayDate = todayEntryDate();
+    const todayDate = getSelectedDate();
     if (reflectionText.length > 5) {
       // Collect hourly log entries
       const hourLog = HOURS.map((h, i) => {
@@ -2319,7 +2319,7 @@
     const todayEntry = buildTodayEntry();
     reflections = reflections.filter(r => r.date !== todayDate);
     reflections.unshift(todayEntry);
-    if (reflections.length > 90) reflections.length = 90;
+    if (reflections.length > 365) reflections.length = 365;
 
     // Write to Gist with timeout so it never hangs
     showReflectSync('Saving…', 'var(--text3)');
@@ -2467,10 +2467,54 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
     return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
   }
 
-  function buildTodayEntry() {
-    const d = new Date();
-    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  function getSelectedDate() {
+    const inp = document.getElementById('reflect-date-picker');
+    if (!inp || !inp.value) return todayEntryDate();
+    const d = new Date(inp.value + 'T12:00:00');
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+  }
+
+  function getSelectedDay() {
+    const inp = document.getElementById('reflect-date-picker');
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    if (!inp || !inp.value) return days[new Date().getDay()];
+    return days[new Date(inp.value + 'T12:00:00').getDay()];
+  }
+
+  function initReflectDatePicker() {
+    const inp = document.getElementById('reflect-date-picker');
+    if (!inp) return;
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth()+1).padStart(2,'0');
+    const dd = String(today.getDate()).padStart(2,'0');
+    inp.value = `${yyyy}-${mm}-${dd}`;
+    inp.max = `${yyyy}-${mm}-${dd}`;
+    updateReflectDateLabel();
+  }
+
+  function updateReflectDateLabel() {
+    const lbl = document.getElementById('reflect-date-label');
+    const btn = document.getElementById('reflect-save-btn');
+    const sel = getSelectedDate();
+    const today = todayEntryDate();
+    const isToday = sel === today;
+    if (lbl) lbl.textContent = isToday ? '(today)' : '';
+    if (btn) btn.textContent = isToday ? '💾 Save today's reflection' : '💾 Save reflection for ' + sel;
+  }
+
+  function setReflectDateToday() {
+    initReflectDatePicker();
+    onReflectDateChange();
+  }
+
+  function onReflectDateChange() {
+    updateReflectDateLabel();
+    populateTodayForm();
+  }
+
+  function buildTodayEntry() {
     const hourData = HOURS.map((h, i) => {
       const activity = (document.getElementById('hr-act-' + i) || {}).value?.trim() || '';
       const health   = document.querySelector(`[data-hri="${i}"].active-good`) ? 'good'
@@ -2481,15 +2525,30 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
     const goodCount = hourData.filter(h => h.health === 'good').length;
     const badCount  = hourData.filter(h => h.health === 'bad').length;
     return {
-      date: months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear(),
-      day: days[d.getDay()], hours: hourData, reflection, goodCount, badCount,
+      date: getSelectedDate(),
+      day: getSelectedDay(),
+      hours: hourData, reflection, goodCount, badCount,
       savedAt: new Date().toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' })
     };
   }
 
   function populateTodayForm() {
-    const todayDate = todayEntryDate();
-    const entry = reflections.find(r => r.date === todayDate);
+    const selDate = getSelectedDate();
+    const entry = reflections.find(r => r.date === selDate);
+    // Clear the form first
+    HOURS.forEach((h, i) => {
+      const inp = document.getElementById('hr-act-' + i);
+      if (inp) inp.value = '';
+      const good = document.querySelector(`[data-hri="${i}"][data-hval="good"]`);
+      const bad  = document.querySelector(`[data-hri="${i}"][data-hval="bad"]`);
+      if (good) { good.classList.remove('active-good'); }
+      if (bad)  { bad.classList.remove('active-bad'); }
+    });
+    const ref = document.getElementById('eod-reflection');
+    if (ref) ref.value = '';
+    // Hide existing Claude output when switching dates
+    const wrap = document.getElementById('claude-output-wrap');
+    if (wrap) wrap.style.display = 'none';
     if (!entry) return;
     // Restore hour inputs
     entry.hours.forEach(h => {
@@ -2500,8 +2559,16 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
       if (h.health) setHealthToggle(idx, h.health, false);
     });
     // Restore reflection
-    const ref = document.getElementById('eod-reflection');
     if (ref && entry.reflection) ref.value = entry.reflection;
+    // Show saved diagnosis if it exists
+    if (entry.aiDiagnosis) {
+      const outputWrap = document.getElementById('claude-output-wrap');
+      const outputEl = document.getElementById('claude-output');
+      if (outputWrap && outputEl) {
+        outputWrap.style.display = 'block';
+        outputEl.innerHTML = entry.aiDiagnosis;
+      }
+    }
   }
 
   function setHealthToggle(idx, val, save) {
@@ -2541,41 +2608,59 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
   function renderReflectLog() {
     const el = document.getElementById('reflect-log-list');
     if (!el) return;
-    const todayDate = todayEntryDate();
-    const past = reflections.filter(r => r.date !== todayDate);
-    if (!past.length) {
-      el.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:16px 0;">No past days logged yet.</div>';
+    const all = reflections.slice(0, 60);
+    if (!all.length) {
+      el.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:16px 0;">No days logged yet. Save your first reflection above.</div>';
       return;
     }
-    el.innerHTML = past.slice(0, 30).map((r, i) => {
+    const todayDate = todayEntryDate();
+    el.innerHTML = all.map((r, i) => {
       const total = r.hours.length;
       const pct = total ? Math.round((r.goodCount / total) * 100) : 0;
       const bucketColor = pct >= 70 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
-      const hours = r.hours.map(h =>
+      const isToday = r.date === todayDate;
+      const hours = r.hours.length ? r.hours.map(h =>
         `<div class="rlog-hour-item">
           <span class="rlog-hour-time">${h.hour}</span>
           <span class="rlog-hour-act">${escHTML(h.activity)}</span>
           ${h.health ? `<span class="rlog-hour-badge ${h.health==='good'?'rlog-good':'rlog-bad'}">${h.health==='good'?'✅ Healthy':'❌ Not healthy'}</span>` : ''}
         </div>`
-      ).join('');
-      const refText = r.reflection ? `<div class="rlog-reflection">"${escHTML(r.reflection)}"</div>` : '';
-      const aiBlock = r.aiDiagnosis ? `
-        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border2);">
-          <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;">
-            <span style="font-size:14px;">🤖</span>
-            <span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:rgba(139,92,246,.8);">Claude's Diagnosis</span>
+      ).join('') : '<div style="font-size:11px;color:var(--text3);padding:4px 0;">No hourly log entries.</div>';
+      const refText = r.reflection
+        ? `<div style="margin-top:14px;padding:12px;background:var(--bg2);border-radius:8px;border-left:3px solid var(--border2);">
+             <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:6px;">Your reflection</div>
+             <div style="font-size:13px;color:var(--text1);line-height:1.7;font-style:italic;">"${escHTML(r.reflection)}"</div>
+           </div>`
+        : '<div style="font-size:11px;color:var(--text3);margin-top:10px;font-style:italic;">No reflection written for this day.</div>';
+      const aiBlock = r.aiDiagnosis
+        ? `<div style="margin-top:14px;padding:14px;background:rgba(139,92,246,.06);border-radius:8px;border:1px solid rgba(139,92,246,.2);">
+             <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+               <div style="width:26px;height:26px;border-radius:6px;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">🤖</div>
+               <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:rgba(139,92,246,.85);">Claude's Diagnosis</div>
+             </div>
+             ${r.aiDiagnosis}
+           </div>`
+        : '<div style="font-size:11px;color:var(--text3);margin-top:10px;font-style:italic;">No AI diagnosis for this day.</div>';
+      return `<div class="rlog-day-card" style="${isToday ? 'border-color:rgba(99,102,241,.4);' : ''}">
+        <div class="rlog-day-header" onclick="toggleRlogDay(${i})" style="cursor:pointer;">
+          <div style="flex:1;">
+            <div class="rlog-day-title">
+              ${isToday ? '<span style="font-size:9px;font-weight:700;color:rgba(99,102,241,.9);background:rgba(99,102,241,.12);padding:2px 7px;border-radius:10px;margin-right:6px;vertical-align:middle;">TODAY</span>' : ''}
+              ${r.date} &nbsp;<span style="font-weight:400;color:var(--text3);">${r.day||''}</span>
+              ${r.aiDiagnosis ? ' &nbsp;<span style="font-size:9px;font-weight:700;color:rgba(139,92,246,.7);background:rgba(139,92,246,.1);padding:1px 6px;border-radius:10px;">AI ✓</span>' : ''}
+            </div>
+            <div class="rlog-day-meta">${total} activities logged · <span style="color:${bucketColor};font-weight:600;">${r.goodCount||0} healthy · ${r.badCount||0} not</span>${r.savedAt ? ' · saved ' + r.savedAt : ''}</div>
           </div>
-          ${r.aiDiagnosis}
-        </div>` : '';
-      return `<div class="rlog-day-card">
-        <div class="rlog-day-header" onclick="toggleRlogDay(${i})">
-          <div>
-            <div class="rlog-day-title">${r.date} &nbsp;<span style="font-weight:400;color:var(--text3);">${r.day}</span>${r.aiDiagnosis ? ' &nbsp;<span style="font-size:9px;font-weight:700;color:rgba(139,92,246,.7);background:rgba(139,92,246,.1);padding:1px 6px;border-radius:10px;">AI</span>' : ''}</div>
-            <div class="rlog-day-meta">${total} activities · <span style="color:${bucketColor};font-weight:600;">${r.goodCount} healthy · ${r.badCount} not</span>${r.savedAt ? ' · saved ' + r.savedAt : ''}</div>
-          </div>
-          <span style="font-size:12px;color:var(--text3);" id="rlog-chev-${i}">▼</span>
+          <span style="font-size:12px;color:var(--text3);margin-left:10px;" id="rlog-chev-${i}">▼</span>
         </div>
-        <div class="rlog-day-body" id="rlog-body-${i}">${hours}${refText}${aiBlock}</div>
+        <div class="rlog-day-body" id="rlog-body-${i}">
+          <div style="margin-bottom:10px;">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:8px;">Hourly log</div>
+            ${hours}
+          </div>
+          ${refText}
+          ${aiBlock}
+        </div>
       </div>`;
     }).join('');
   }
@@ -2597,6 +2682,18 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
     <span id="reflect-sync" class="reflect-sync"></span>
   </div>
 
+  <!-- Date picker -->
+  <div class="card" style="padding:14px 16px;margin-bottom:12px;">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);white-space:nowrap;">📅 Logging for:</div>
+      <input type="date" id="reflect-date-picker"
+        style="font-size:13px;font-weight:600;color:var(--text1);background:var(--card-bg);border:1px solid var(--border);border-radius:7px;padding:6px 10px;cursor:pointer;"
+        onchange="onReflectDateChange()">
+      <button onclick="setReflectDateToday()" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--card-bg);color:var(--text2);cursor:pointer;">Today</button>
+      <span id="reflect-date-label" style="font-size:12px;color:var(--text3);"></span>
+    </div>
+  </div>
+
   <!-- KPIs -->
   <div class="reflect-kpi">
     <div class="kpi"><div class="kpi-val" id="r-kpi-good" style="color:var(--green);">0</div><div class="kpi-label">✅ Healthy</div></div>
@@ -2616,7 +2713,7 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
     <div class="card-title">End of day reflection</div>
     <p style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6;">How did today feel? What went well? What do you want to do differently tomorrow?</p>
     <textarea class="reflect-textarea" id="eod-reflection" placeholder="Write your reflection here… be honest with yourself."></textarea>
-    <button class="reflect-save-btn" onclick="saveReflections()">💾 Save today's reflection</button>
+    <button class="reflect-save-btn" id="reflect-save-btn" onclick="saveReflections()">💾 Save reflection</button>
   </div>
 
   <!-- Claude AI Output -->
@@ -2719,6 +2816,7 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
     ).join('');
   }
   // Now that hour rows exist in the DOM, load reflections
+  initReflectDatePicker();
   loadReflections();
 
   // ── DAILY LOG ─────────────────────────────────────────────────────────────
@@ -2985,7 +3083,7 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
     const todayDate = logTodayDate();
     dailyLog = dailyLog.filter(e => e.date !== todayDate);
     dailyLog.unshift(entry);
-    if (dailyLog.length > 90) dailyLog.length = 90;
+    if (dailyLog.length > 365) dailyLog.length = 365;
 
     showLogSync('Saving…', 'var(--text3)');
     try {
@@ -3543,6 +3641,3 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
   </div>
 
 </div>
-
-
-
