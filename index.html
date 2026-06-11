@@ -427,6 +427,442 @@
   .log-past-win { padding:10px 14px; font-size:12px; border-top:1px solid var(--border2); }
   .log-past-win-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text3); margin-bottom:2px; }
   .log-past-win-text { color:var(--text); font-style:italic; line-height:1.5; }
+
+  /* ── MODERN VISUAL UPGRADE ────────────────────────────────────────── */
+
+  /* Smoother global transitions */
+  *, *::before, *::after { transition-property: background-color, border-color, box-shadow, opacity, transform; transition-duration: 0.18s; transition-timing-function: cubic-bezier(0.4,0,0.2,1); }
+  input, textarea, select { transition: border-color 0.15s, box-shadow 0.15s !important; }
+
+  /* Root enhancements */
+  :root {
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.05);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+    --shadow-hover: 0 10px 40px rgba(0,0,0,0.11), 0 2px 10px rgba(0,0,0,0.07);
+    --indigo: #6366f1;
+    --indigo-bg: #eef2ff;
+    --indigo-dark: #4338ca;
+  }
+
+  /* Body — subtle texture */
+  body { background: #f7f7f8; }
+
+  /* ── NAV — frosted glass ───────────────────────────────────────────── */
+  .nav {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,0,0,0.07);
+    box-shadow: var(--shadow-sm);
+  }
+  .nav-logo {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    box-shadow: 0 2px 8px rgba(99,102,241,0.35);
+    transition: box-shadow 0.2s, transform 0.2s !important;
+  }
+  .nav-logo:hover { box-shadow: 0 4px 14px rgba(99,102,241,0.5); transform: scale(1.07); }
+
+  /* Tab hover — animated underline slide */
+  .tab {
+    position: relative;
+    font-size: 12.5px;
+    letter-spacing: 0.01em;
+    transition: color 0.15s !important;
+  }
+  .tab::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 50%; right: 50%;
+    height: 2px;
+    background: var(--indigo);
+    border-radius: 2px 2px 0 0;
+    transition: left 0.2s, right 0.2s !important;
+  }
+  .tab:hover::after { left: 20%; right: 20%; }
+  .tab.active { color: var(--indigo) !important; border-bottom-color: transparent !important; }
+  .tab.active::after { left: 12%; right: 12%; background: var(--indigo); }
+
+  /* ── CARDS — elevation on hover ───────────────────────────────────── */
+  .card {
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(0,0,0,0.07);
+    border-radius: 14px;
+    transition: box-shadow 0.22s, transform 0.22s, border-color 0.22s !important;
+    background: #ffffff;
+  }
+  .card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+  }
+
+  /* ── CARD TITLE — refined ─────────────────────────────────────────── */
+  .card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    color: var(--text3);
+    margin-bottom: 16px;
+  }
+
+  /* ── HABIT ROWS — smooth hover glow ──────────────────────────────── */
+  .habit-row {
+    border-radius: 8px;
+    padding: 9px 8px;
+    margin: 0 -8px;
+    transition: background 0.15s !important;
+  }
+  .habit-row:hover { background: rgba(99,102,241,0.04); opacity: 1 !important; }
+  .habit-row:active { background: rgba(99,102,241,0.08); }
+
+  /* Checkbox — pop animation */
+  .hcheck {
+    border-radius: 6px;
+    border: 1.5px solid #d1d5db;
+    transition: background 0.15s, border-color 0.15s, transform 0.12s, box-shadow 0.15s !important;
+  }
+  .hcheck:hover { border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+  .hcheck.done {
+    background: var(--indigo);
+    border-color: var(--indigo);
+    box-shadow: 0 2px 8px rgba(99,102,241,0.35);
+    transform: scale(1.08);
+  }
+  .hcheck.done::after {
+    border-color: white;
+    border-width: 2px;
+  }
+
+  /* ── BUTTONS — gradient hover + lift ─────────────────────────────── */
+  button, .reflect-save-btn, .g-reset-btn {
+    cursor: pointer;
+    transition: background 0.18s, box-shadow 0.18s, transform 0.12s, border-color 0.18s !important;
+  }
+  button:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+  button:active { transform: translateY(0) scale(0.98); }
+
+  .reflect-save-btn {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+    color: white !important;
+    border: none !important;
+    padding: 11px 22px !important;
+    border-radius: 10px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 10px rgba(99,102,241,0.3) !important;
+    letter-spacing: 0.01em;
+  }
+  .reflect-save-btn:hover {
+    box-shadow: 0 6px 20px rgba(99,102,241,0.45) !important;
+    transform: translateY(-2px) !important;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+  }
+  .reflect-save-btn:active { transform: translateY(0) scale(0.98) !important; }
+  .reflect-save-btn:disabled { opacity: 0.65 !important; transform: none !important; }
+
+  /* ── TAGS — pill hover ───────────────────────────────────────────── */
+  .tag {
+    transition: filter 0.15s, transform 0.12s !important;
+    font-size: 10px;
+    letter-spacing: 0.03em;
+  }
+  .tag:hover { filter: brightness(0.93); transform: scale(1.04); }
+
+  /* ── KPI / METRIC CARDS — lift ──────────────────────────────────── */
+  .kpi, .reflect-kpi .kpi {
+    border-radius: 10px;
+    transition: box-shadow 0.2s, transform 0.2s !important;
+    background: white;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: var(--shadow-sm);
+  }
+  .kpi:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .kpi-val { font-weight: 700; }
+
+  /* ── PROGRESS BARS — shimmer animation ──────────────────────────── */
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  .progress-fill, .bar-fill {
+    background-size: 200% auto;
+    animation: shimmer 2.5s linear infinite;
+    background-image: linear-gradient(90deg, currentColor 0%, rgba(255,255,255,0.25) 50%, currentColor 100%);
+  }
+  .progress-track, .bar-track { border-radius: 6px; height: 7px; }
+  .progress-fill, .bar-fill { border-radius: 6px; }
+
+  /* ── GROCERY ITEMS — hover glow ─────────────────────────────────── */
+  .g-item {
+    border-radius: 6px;
+    padding: 6px 4px;
+    margin: 0 -4px;
+    transition: background 0.15s !important;
+  }
+  .g-item:hover { background: rgba(99,102,241,0.04); }
+  .g-box { transition: background 0.15s, border-color 0.15s, transform 0.12s, box-shadow 0.15s !important; }
+  .g-box:hover { border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+  .g-box.checked { background: var(--indigo) !important; border-color: var(--indigo) !important; transform: scale(1.1); }
+
+  /* ── SECTION HEADERS ─────────────────────────────────────────────── */
+  .section-header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .section-header p { font-size: 13px; color: var(--text3); margin-top: 3px; }
+
+  /* ── HABIT LOG TOGGLE ────────────────────────────────────────────── */
+  .hlog-toggle {
+    border-radius: 10px;
+    transition: background 0.15s, box-shadow 0.15s !important;
+  }
+  .hlog-toggle:hover { background: rgba(99,102,241,0.05); box-shadow: inset 0 0 0 1px rgba(99,102,241,0.15); }
+
+  /* ── REFLECT LOG DAY CARDS ───────────────────────────────────────── */
+  .rlog-day-card {
+    border-radius: 12px !important;
+    border: 1px solid rgba(0,0,0,0.07) !important;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s, transform 0.2s !important;
+    overflow: hidden;
+  }
+  .rlog-day-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+  .rlog-day-header { transition: background 0.15s !important; }
+  .rlog-day-header:hover { background: rgba(99,102,241,0.03); }
+
+  /* ── INPUTS & TEXTAREAS ──────────────────────────────────────────── */
+  input[type="text"], input[type="date"], textarea, select {
+    border: 1.5px solid rgba(0,0,0,0.12) !important;
+    border-radius: 8px !important;
+    background: white !important;
+    transition: border-color 0.15s, box-shadow 0.15s !important;
+  }
+  input[type="text"]:focus, input[type="date"]:focus, textarea:focus, select:focus {
+    outline: none !important;
+    border-color: var(--indigo) !important;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15) !important;
+  }
+  .reflect-textarea { border-radius: 10px !important; border: 1.5px solid rgba(0,0,0,0.1) !important; }
+  .reflect-textarea:focus { border-color: var(--indigo) !important; box-shadow: 0 0 0 3px rgba(99,102,241,0.12) !important; }
+
+  /* ── SCHEDULE BLOCKS — rounded + hover ──────────────────────────── */
+  .sched-block { border-radius: 8px !important; transition: filter 0.15s, transform 0.15s !important; }
+  .sched-block:hover { filter: brightness(0.96); transform: translateX(2px); }
+
+  /* ── HOUR INPUT ROWS (Reflect) ───────────────────────────────────── */
+  .hr-row {
+    transition: background 0.15s !important;
+    border-radius: 8px;
+    padding: 6px 8px;
+    margin: 0 -8px;
+  }
+  .hr-row:hover { background: rgba(99,102,241,0.03); }
+
+  /* ── DROPDOWN / DETAILS ──────────────────────────────────────────── */
+  details { transition: box-shadow 0.18s !important; }
+  details:hover { box-shadow: var(--shadow-sm); }
+  details summary { transition: color 0.15s !important; }
+  details summary:hover { color: var(--indigo); }
+  details[open] { box-shadow: var(--shadow-sm); border-color: rgba(99,102,241,0.2) !important; }
+  details[open] summary { color: var(--indigo); }
+
+  /* ── PAGE ENTRANCE ANIMATION ─────────────────────────────────────── */
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .page.active { animation: fadeSlideUp 0.25s cubic-bezier(0.4,0,0.2,1); }
+
+  /* ── SPIRIT / PROTOCOL ROWS ──────────────────────────────────────── */
+  .spirit-row, .protocol-row {
+    border-radius: 8px;
+    padding-left: 8px; padding-right: 8px;
+    margin: 0 -8px;
+    transition: background 0.15s !important;
+  }
+  .spirit-row:hover, .protocol-row:hover { background: rgba(0,0,0,0.02); }
+
+  /* ── HEALTH TOGGLE BUTTONS ───────────────────────────────────────── */
+  .hr-health-btn {
+    transition: background 0.15s, transform 0.12s, box-shadow 0.15s !important;
+  }
+  .hr-health-btn:hover { transform: scale(1.05); box-shadow: var(--shadow-sm); }
+  .active-good { box-shadow: 0 2px 8px rgba(99,153,34,0.3) !important; }
+  .active-bad  { box-shadow: 0 2px 8px rgba(226,75,74,0.3) !important; }
+
+  /* ── SCORE / RESET BUTTON ────────────────────────────────────────── */
+  .score-reset-btn, [onclick*="resetDay"] {
+    background: linear-gradient(135deg, #f43f5e, #e11d48) !important;
+    color: white !important;
+    border-radius: 10px !important;
+    border: none !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 10px rgba(225,29,72,0.25) !important;
+  }
+  .score-reset-btn:hover, [onclick*="resetDay"]:hover {
+    box-shadow: 0 6px 20px rgba(225,29,72,0.4) !important;
+    transform: translateY(-2px) !important;
+  }
+
+  /* Scrollbar — slim modern */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.28); }
+
+  /* ── GLASSMORPHISM LAYER ─────────────────────────────────────────── */
+
+  /* Body — layered background for glass to blur against */
+  body {
+    background: linear-gradient(135deg, #f0f0ff 0%, #f7f7f8 40%, #f0f7ff 100%) !important;
+    background-attachment: fixed !important;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: -30%; left: -20%;
+    width: 60%; height: 60%;
+    background: radial-gradient(circle, rgba(99,102,241,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -20%; right: -15%;
+    width: 55%; height: 55%;
+    background: radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .nav, .page { position: relative; z-index: 1; }
+
+  /* Nav — deeper glass */
+  .nav {
+    background: rgba(255,255,255,0.75) !important;
+    backdrop-filter: blur(20px) saturate(1.4) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(1.4) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.6) !important;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.04) !important;
+  }
+
+  /* Cards — frosted glass */
+  .card {
+    background: rgba(255,255,255,0.72) !important;
+    backdrop-filter: blur(16px) saturate(1.3) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(1.3) !important;
+    border: 1px solid rgba(255,255,255,0.85) !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9) !important;
+  }
+  .card:hover {
+    background: rgba(255,255,255,0.85) !important;
+    border-color: rgba(255,255,255,0.95) !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.09), inset 0 1px 0 rgba(255,255,255,1) !important;
+  }
+
+  /* KPI cards — glass */
+  .kpi {
+    background: rgba(255,255,255,0.65) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255,255,255,0.8) !important;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.9) !important;
+  }
+  .kpi:hover {
+    background: rgba(255,255,255,0.82) !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,1) !important;
+  }
+
+  /* Reflect KPI */
+  .reflect-kpi .kpi {
+    background: rgba(255,255,255,0.65) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+
+  /* Colored section cards (amber-bg, purple-bg etc) — glass tint */
+  [style*="var(--amber-bg)"], [style*="background:var(--amber-bg)"] {
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255,255,255,0.7) !important;
+  }
+
+  /* Meal / smoothie / schedule blocks */
+  .meal, .smoothie, .g-section {
+    background: rgba(244,244,242,0.6) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255,255,255,0.75) !important;
+    border-radius: 10px !important;
+  }
+
+  /* Hlog toggle */
+  .hlog-toggle {
+    background: rgba(255,255,255,0.55) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255,255,255,0.75) !important;
+  }
+
+  /* Reflect log day cards */
+  .rlog-day-card {
+    background: rgba(255,255,255,0.68) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border: 1px solid rgba(255,255,255,0.85) !important;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.9) !important;
+  }
+  .rlog-day-card:hover {
+    background: rgba(255,255,255,0.82) !important;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,1) !important;
+  }
+
+  /* Inputs — glass */
+  input[type="text"], input[type="date"], textarea, select {
+    background: rgba(255,255,255,0.75) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    border: 1.5px solid rgba(255,255,255,0.9) !important;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05) !important;
+  }
+  input[type="text"]:focus, input[type="date"]:focus, textarea:focus, select:focus {
+    background: rgba(255,255,255,0.92) !important;
+    border-color: var(--indigo) !important;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15), inset 0 1px 3px rgba(0,0,0,0.04) !important;
+  }
+  .reflect-textarea {
+    background: rgba(255,255,255,0.72) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+  }
+
+  /* Section header — glass pill */
+  .section-header {
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.8);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9);
+  }
+
+  /* Swipe indicator — shows briefly on swipe */
+  #swipe-indicator {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) scale(0.8);
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.9);
+    border-radius: 16px;
+    padding: 14px 24px;
+    font-size: 14px; font-weight: 600; color: #6366f1;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 9999;
+  }
+  #swipe-indicator.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
 </style>
 </head>
 <body>
@@ -1838,12 +2274,49 @@
     chevron.classList.toggle('open', !isOpen);
   }
 
-  function showTab(id) {
+  const TAB_ORDER = ['daily','system','goals','nutrition','reference','tasks','reflect','log','schedule','alcohol'];
+  let currentTabIdx = 0;
+
+  function showTab(id, fromSwipe) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-' + id).classList.add('active');
-    event.currentTarget.classList.add('active');
+    const tabEl = document.querySelector(`.tab[onclick*="'${id}'"]`);
+    if (tabEl) { tabEl.classList.add('active'); tabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); }
+    currentTabIdx = TAB_ORDER.indexOf(id);
+    if (fromSwipe) {
+      var ind = document.getElementById('swipe-indicator');
+      if (ind) {
+        ind.textContent = (fromSwipe === 'right' ? '← ' : '') + id.charAt(0).toUpperCase() + id.slice(1) + (fromSwipe === 'left' ? ' →' : '');
+        ind.classList.add('show');
+        setTimeout(function(){ ind.classList.remove('show'); }, 900);
+      }
+    }
   }
+
+  // Magic Mouse / trackpad 3-finger swipe via wheel deltaX
+  (function() {
+    var accumX = 0, timer = null, cooldown = false;
+    document.addEventListener('wheel', function(e) {
+      if (cooldown) return;
+      var absX = Math.abs(e.deltaX), absY = Math.abs(e.deltaY);
+      if (absX < 2 || absY > absX * 0.7) return;
+      accumX += e.deltaX;
+      clearTimeout(timer);
+      timer = setTimeout(function() {
+        if (Math.abs(accumX) > 80) {
+          var dir = accumX > 0 ? 1 : -1;
+          var next = Math.max(0, Math.min(TAB_ORDER.length - 1, currentTabIdx + dir));
+          if (next !== currentTabIdx) {
+            showTab(TAB_ORDER[next], dir > 0 ? 'left' : 'right');
+            cooldown = true;
+            setTimeout(function(){ cooldown = false; }, 500);
+          }
+        }
+        accumX = 0;
+      }, 80);
+    }, { passive: true });
+  })();
 
   function setDate() {
     const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
