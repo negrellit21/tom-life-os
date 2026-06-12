@@ -4265,12 +4265,12 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
 .hub-insight-body { flex: 1; }
 .hub-insight-title { font-weight: 700; color: var(--text1); margin-bottom: 1px; }
 .hub-insight-detail { color: var(--text3); font-size: 11px; }
-.hub-wkbar { display: flex; gap: 6px; align-items: flex-end; height: 60px; margin-bottom: 4px; }
+.hub-wkbar { display: flex; gap: 6px; align-items: flex-end; height: 80px; margin-bottom: 4px; }
 .hub-wkbar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.hub-wkbar-fill { width: 100%; border-radius: 5px 5px 0 0; background: linear-gradient(180deg, #6366f1, #8b5cf6); transition: height 0.4s ease; min-height: 4px; }
+.hub-wkbar-fill { width: 100%; border-radius: 5px 5px 0 0; background: linear-gradient(180deg, #6366f1, #8b5cf6); transition: height 0.4s ease; min-height: 4px; position: relative; }
 .hub-wkbar-fill.weekend { background: linear-gradient(180deg, #f59e0b, #f97316); }
 .hub-wkbar-lbl { font-size: 9px; color: var(--text3); font-weight: 600; }
-.hub-wkbar-pct { font-size: 9px; color: var(--text2); font-weight: 700; }
+.hub-wkbar-pct { font-size: 9px; color: var(--text2); font-weight: 700; min-height: 13px; }
 </style>
 
 <div class="page" id="tab-hub">
@@ -4487,11 +4487,22 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
         wkBarEl.innerHTML = days.map((lbl, i) => {
           const val    = avgs[i];
           const isWknd = i >= 5;
-          const height = val !== null ? Math.round((val / maxV) * 52) + 'px' : '4px';
+          const barH   = val !== null ? Math.round((val / maxV) * 72) : 4;
           const opacity = val !== null ? '1' : '0.25';
+          // Show pct inside bar if tall enough, else above it
+          const pctInside = barH >= 22;
+          const pctStyle  = pctInside
+            ? 'position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:9px;font-weight:700;color:rgba(255,255,255,0.9);'
+            : '';
+          const pctAbove  = !pctInside && val !== null
+            ? `<div class="hub-wkbar-pct">${val}%</div>`
+            : `<div class="hub-wkbar-pct"></div>`;
+          const pctOverlay = pctInside && val !== null
+            ? `<span style="${pctStyle}">${val}%</span>`
+            : '';
           return `<div class="hub-wkbar-col">
-            <div class="hub-wkbar-pct">${val !== null ? val+'%' : ''}</div>
-            <div class="hub-wkbar-fill${isWknd?' weekend':''}" style="height:${height};opacity:${opacity};"></div>
+            ${pctAbove}
+            <div class="hub-wkbar-fill${isWknd?' weekend':''}" style="height:${barH}px;opacity:${opacity};">${pctOverlay}</div>
             <div class="hub-wkbar-lbl">${lbl}</div>
           </div>`;
         }).join('');
