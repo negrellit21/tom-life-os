@@ -1468,9 +1468,9 @@
         <canvas id="resp-chart"></canvas>
       </div>
       <div style="display:flex; gap:16px; margin-top:8px; font-size:11px; color:var(--text2);">
-        <span style="display:flex; align-items:center; gap:5px;"><span style="display:inline-block; width:16px; height:3px; background:#378ADD; border-radius:2px;"></span>Your avg</span>
-        <span style="display:flex; align-items:center; gap:5px;"><span style="display:inline-block; width:16px; height:2px; background:#BA7517; border-radius:2px; border-top: 2px dashed #BA7517;"></span>Baseline (~25 min)</span>
-        <span style="display:flex; align-items:center; gap:5px;"><span style="display:inline-block; width:16px; height:2px; background:#639922; border-radius:2px; border-top: 2px dashed #639922;"></span>Target (5 min)</span>
+        <span style="display:flex; align-items:center; gap:5px;"><span style="display:inline-block; width:16px; height:3px; background:#6366f1; border-radius:2px;"></span>Your avg</span>
+        <span style="display:flex; align-items:center; gap:5px;"><span style="display:inline-block; width:16px; height:2px; background:#f59e0b; border-radius:2px; border-top: 2px dashed #f59e0b;"></span>Baseline (~25 min)</span>
+        <span style="display:flex; align-items:center; gap:5px;"><span style="display:inline-block; width:16px; height:2px; background:#10b981; border-radius:2px; border-top: 2px dashed #10b981;"></span>Target (5 min)</span>
       </div>
     </div>
 
@@ -2743,8 +2743,8 @@
     const labels = chartData.map(r => r.date);
     const dataPoints = chartData.map(r => r.score);
 
-    // color each point based on value
-    const pointColors = dataPoints.map(s => s <= 1 ? '#639922' : s <= 3.5 ? '#BA7517' : s <= 10 ? '#E07B39' : '#E24B4A');
+    // color each point based on value — purple theme
+    const pointColors = dataPoints.map(s => s <= 1 ? '#10b981' : s <= 3.5 ? '#8b5cf6' : s <= 10 ? '#f59e0b' : '#ef4444');
 
     const canvas = document.getElementById('resp-chart');
     if (respChart) { respChart.destroy(); }
@@ -2757,8 +2757,8 @@
           {
             label: 'Your response time',
             data: dataPoints,
-            borderColor: '#378ADD',
-            backgroundColor: 'rgba(55,138,221,0.08)',
+            borderColor: '#6366f1',
+            backgroundColor: 'rgba(99,102,241,0.08)',
             borderWidth: 2.5,
             pointBackgroundColor: pointColors,
             pointBorderColor: pointColors,
@@ -2770,7 +2770,7 @@
           {
             label: 'Baseline (~25 min)',
             data: labels.map(() => 25),
-            borderColor: '#BA7517',
+            borderColor: '#f59e0b',
             borderWidth: 1.5,
             borderDash: [6, 4],
             pointRadius: 0,
@@ -2780,7 +2780,7 @@
           {
             label: 'Target (5 min)',
             data: labels.map(() => 5),
-            borderColor: '#639922',
+            borderColor: '#10b981',
             borderWidth: 1.5,
             borderDash: [6, 4],
             pointRadius: 0,
@@ -4334,12 +4334,50 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
     <div class="hub-chart-title">Task Completion · Priority Breakdown</div>
     <div id="hub-pri-bars" style="display:flex;flex-direction:column;gap:10px;margin-top:4px;"></div>
   </div>
+
+  <!-- Text response time chart -->
+  <div class="hub-chart-card" style="margin-top:14px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div class="hub-chart-title" style="margin-bottom:0;">💬 Text Response Time</div>
+      <button onclick="showTab('goals')" style="font-size:11px;padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:rgba(99,102,241,0.08);color:#6366f1;font-weight:700;cursor:pointer;">Log today →</button>
+    </div>
+    <!-- KPI strip -->
+    <div style="display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap;">
+      <div style="text-align:center;">
+        <div style="font-size:20px;font-weight:800;color:#f59e0b;" id="hub-resp-baseline">~25 min</div>
+        <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">Baseline</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:20px;font-weight:800;color:#6366f1;" id="hub-resp-week">—</div>
+        <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">This Week</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:20px;font-weight:800;color:#10b981;" id="hub-resp-best">—</div>
+        <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">Best Day</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:20px;font-weight:800;color:#10b981;">5 min</div>
+        <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">Target</div>
+      </div>
+    </div>
+    <!-- Chart -->
+    <div id="hub-resp-chart-wrap" style="position:relative;height:160px;">
+      <canvas id="hub-resp-chart"></canvas>
+    </div>
+    <div style="display:flex;gap:16px;margin-top:8px;font-size:11px;color:var(--text2);">
+      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:14px;height:3px;background:#6366f1;border-radius:2px;"></span>Your avg</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:14px;height:2px;background:#f59e0b;border-radius:2px;border-top:2px dashed #f59e0b;"></span>Baseline</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:14px;height:2px;background:#10b981;border-radius:2px;border-top:2px dashed #10b981;"></span>Target</span>
+    </div>
+    <div id="hub-resp-empty" style="display:none;font-size:12px;color:var(--text3);padding:16px 0;text-align:center;">No response time data yet — log from Goals tab</div>
+  </div>
 </div>
 
 <script>
   // ── HUB ────────────────────────────────────────────────────────────────
 
   var hubTrendChart = null;
+  var hubRespChart  = null;
 
   function renderHub() {
     const hlog     = loadHlog();
@@ -4593,6 +4631,133 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
               <div class="hub-insight-detail">${i.detail}</div>
             </div>
           </div>`).join('');
+      }
+    }
+
+    // ── Response time chart on Hub
+    const RESP_SCORES_HUB = { under2: 1, under5: 3.5, under15: 10, over15: 25 };
+    const RESP_LABELS_HUB = { under2:'Under 2 min', under5:'2–5 min', under15:'5–15 min', over15:'15+ min' };
+
+    // Load resp log same way as Goals tab
+    var hubRespLog = [];
+    try {
+      var storedResp = JSON.parse(localStorage.getItem('lifeos_resplog') || '[]');
+      // Also merge in the preloaded log if available
+      var preloaded = (typeof PRELOADED_RESP_LOG !== 'undefined') ? PRELOADED_RESP_LOG : [];
+      var storedDatesR = new Set(storedResp.map(r => r.date));
+      hubRespLog = [...storedResp, ...preloaded.filter(r => !storedDatesR.has(r.date))];
+      hubRespLog.sort((a,b) => new Date(b.date) - new Date(a.date));
+    } catch(e) { hubRespLog = []; }
+
+    const fmtR = s => s <= 1 ? 'Under 2 min' : s <= 3.5 ? '~3.5 min' : s <= 10 ? '~10 min' : '15+ min';
+
+    const hRespEmpty = document.getElementById('hub-resp-empty');
+    const hRespWrap  = document.getElementById('hub-resp-chart-wrap');
+
+    if (!hubRespLog.length) {
+      if (hRespWrap)  hRespWrap.style.display  = 'none';
+      if (hRespEmpty) hRespEmpty.style.display  = 'block';
+    } else {
+      if (hRespWrap)  hRespWrap.style.display  = 'block';
+      if (hRespEmpty) hRespEmpty.style.display  = 'none';
+
+      // KPI values
+      const scores = hubRespLog.map(r => r.score);
+      const weekAvgR = hubRespLog.slice(0,7).reduce((a,r)=>a+r.score,0) / Math.min(hubRespLog.length, 7);
+      const bestR    = Math.min(...scores);
+
+      const hRBase = document.getElementById('hub-resp-baseline');
+      const hRWeek = document.getElementById('hub-resp-week');
+      const hRBest = document.getElementById('hub-resp-best');
+      if (hRBase) { hRBase.textContent = '~25 min'; }
+      if (hRWeek) {
+        hRWeek.textContent = fmtR(Math.round(weekAvgR));
+        hRWeek.style.color = weekAvgR <= 5 ? '#10b981' : weekAvgR <= 10 ? '#f59e0b' : '#ef4444';
+      }
+      if (hRBest) {
+        hRBest.textContent = fmtR(bestR);
+        hRBest.style.color = bestR <= 5 ? '#10b981' : bestR <= 10 ? '#f59e0b' : '#ef4444';
+      }
+
+      // Chart
+      const chartData  = [...hubRespLog].reverse().slice(-30);
+      const chartLbls  = chartData.map(r => r.date);
+      const chartPts   = chartData.map(r => r.score);
+      const ptColors   = chartPts.map(s => s <= 1 ? '#10b981' : s <= 3.5 ? '#8b5cf6' : s <= 10 ? '#f59e0b' : '#ef4444');
+
+      const hRCanvas = document.getElementById('hub-resp-chart');
+      if (hRCanvas) {
+        if (hubRespChart) { hubRespChart.destroy(); hubRespChart = null; }
+        hubRespChart = new Chart(hRCanvas, {
+          type: 'line',
+          data: {
+            labels: chartLbls,
+            datasets: [
+              {
+                label: 'Response time',
+                data: chartPts,
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99,102,241,0.08)',
+                borderWidth: 2.5,
+                pointBackgroundColor: ptColors,
+                pointBorderColor: ptColors,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: true,
+                tension: 0.3,
+              },
+              {
+                label: 'Baseline',
+                data: chartLbls.map(() => 25),
+                borderColor: '#f59e0b',
+                borderWidth: 1.5,
+                borderDash: [6,4],
+                pointRadius: 0,
+                fill: false,
+              },
+              {
+                label: 'Target',
+                data: chartLbls.map(() => 5),
+                borderColor: '#10b981',
+                borderWidth: 1.5,
+                borderDash: [6,4],
+                pointRadius: 0,
+                fill: false,
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: ctx => {
+                    if (ctx.datasetIndex === 0) {
+                      const s = ctx.parsed.y;
+                      return ' ' + (s <= 1 ? 'Under 2 min' : s <= 3.5 ? '2–5 min' : s <= 10 ? '5–15 min' : '15+ min');
+                    }
+                    return ctx.dataset.label;
+                  }
+                },
+                backgroundColor: 'rgba(26,26,26,0.88)',
+                titleColor: '#fff',
+                bodyColor: '#ddd',
+                padding: 10,
+                cornerRadius: 8,
+              }
+            },
+            scales: {
+              x: { ticks: { font: { size: 9 }, color: '#aaa', maxRotation: 35, maxTicksLimit: 8 }, grid: { display: false } },
+              y: {
+                min: 0, max: 30,
+                ticks: { font: { size: 9 }, color: '#aaa', callback: v => v === 0 ? '' : v + ' min', stepSize: 5 },
+                grid: { color: 'rgba(0,0,0,0.05)' }
+              }
+            }
+          }
+        });
       }
     }
   }
