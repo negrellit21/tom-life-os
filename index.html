@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Tom's Life OS</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
@@ -24,6 +24,7 @@
     --teal: #1D9E75; --teal-bg: #E1F5EE; --teal-dark: #04342C;
     --radius: 10px; --radius-sm: 6px;
   }
+  html, body { overflow-x: hidden; max-width: 100vw; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
   /* NAV */
   .nav { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
@@ -894,6 +895,7 @@
   #arrow-left:hover  { transform: translateY(-50%) translateX(-2px); }
   #arrow-right:hover { transform: translateY(-50%) translateX(2px); }
   #arrow-left, #arrow-right { z-index: 99999 !important; }
+  @media (max-width: 600px) { #arrow-left, #arrow-right { display: none !important; } }
 </style>
 </head>
 <body>
@@ -2334,8 +2336,25 @@
     if (next !== currentTabIdx) showTab(TAB_ORDER[next], dir > 0 ? 'left' : 'right');
   }
 
-  function showTab(id, fromSwipe) {
+  function resetViewport() {
+    // Reset all scroll axes (iOS Safari needs explicit horizontal reset too)
     window.scrollTo(0, 0);
+    document.documentElement.scrollTop  = 0;
+    document.body.scrollTop             = 0;
+    document.documentElement.scrollLeft = 0;
+    document.body.scrollLeft            = 0;
+    // Snap zoom back to 1× on iOS by briefly locking scale then releasing
+    var vp = document.querySelector('meta[name="viewport"]');
+    if (vp) {
+      vp.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0';
+      setTimeout(function() {
+        vp.content = 'width=device-width, initial-scale=1.0, viewport-fit=cover';
+      }, 80);
+    }
+  }
+
+  function showTab(id, fromSwipe) {
+    resetViewport();
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-' + id).classList.add('active');
