@@ -863,9 +863,53 @@
     z-index: 9999;
   }
   #swipe-indicator.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+
+  /* Side nav arrows */
+  .side-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 64px;
+    cursor: pointer;
+    opacity: 0.45;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: auto;
+    user-select: none;
+    background: rgba(99,102,241,0.12);
+    border-radius: 10px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(99,102,241,0.2);
+  }
+  .side-arrow:hover { opacity: 1; background: rgba(99,102,241,0.2); }
+  .side-arrow.hidden { opacity: 0 !important; pointer-events: none !important; }
+  .side-arrow svg { width: 18px; height: 18px; display: block; }
+  #arrow-left  { left: 8px; }
+  #arrow-right { right: 8px; }
+  #arrow-left:hover  { transform: translateY(-50%) translateX(-2px); }
+  #arrow-right:hover { transform: translateY(-50%) translateX(2px); }
+  #arrow-left, #arrow-right { z-index: 99999 !important; }
 </style>
 </head>
 <body>
+
+<!-- Side navigation arrows -->
+<div id="arrow-left" class="side-arrow hidden" onclick="navArrow(-1)" title="Previous tab">
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M15 18l-6-6 6-6" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</div>
+<div id="arrow-right" class="side-arrow" onclick="navArrow(1)" title="Next tab">
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M9 18l6-6-6-6" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</div>
+<div id="swipe-indicator"></div>
 
 <nav class="nav">
   <div class="nav-inner">
@@ -890,6 +934,7 @@
       </div>
       Life OS <span>· Tom</span>
     </div>
+    <div class="tab" onclick="showTab('hub')">⚡ Hub</div>
     <div class="tab active" onclick="showTab('daily')">Daily</div>
     <div class="tab" onclick="showTab('system')">My System</div>
     <div class="tab" onclick="showTab('goals')">Goals</div>
@@ -2274,16 +2319,31 @@
     chevron.classList.toggle('open', !isOpen);
   }
 
-  const TAB_ORDER = ['daily','system','goals','nutrition','reference','tasks','reflect','log','schedule','alcohol'];
+  const TAB_ORDER = ['hub','daily','system','goals','nutrition','reference','tasks','reflect','log','schedule','alcohol'];
   let currentTabIdx = 0;
 
+  function updateSideArrows() {
+    var al = document.getElementById('arrow-left');
+    var ar = document.getElementById('arrow-right');
+    if (al) al.classList.toggle('hidden', currentTabIdx <= 0);
+    if (ar) ar.classList.toggle('hidden', currentTabIdx >= TAB_ORDER.length - 1);
+  }
+
+  function navArrow(dir) {
+    var next = Math.max(0, Math.min(TAB_ORDER.length - 1, currentTabIdx + dir));
+    if (next !== currentTabIdx) showTab(TAB_ORDER[next], dir > 0 ? 'left' : 'right');
+  }
+
   function showTab(id, fromSwipe) {
+    window.scrollTo(0, 0);
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-' + id).classList.add('active');
     const tabEl = document.querySelector(`.tab[onclick*="'${id}'"]`);
     if (tabEl) { tabEl.classList.add('active'); tabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); }
     currentTabIdx = TAB_ORDER.indexOf(id);
+    updateSideArrows();
+    if (id === 'hub' && typeof renderHub === 'function') renderHub();
     if (fromSwipe) {
       var ind = document.getElementById('swipe-indicator');
       if (ind) {
@@ -2318,6 +2378,49 @@
     }, { passive: true });
   })();
 
+  // Fluid smooth scroll — Apple.com style
+  (function() {
+    var scrollTarget = 0;
+    var scrollCurrent = 0;
+    var isAnimating = false;
+    var ease = 0.088;
+
+    function syncScroll() {
+      scrollTarget = window.scrollY;
+      scrollCurrent = window.scrollY;
+    }
+    syncScroll();
+
+    function smoothUpdate() {
+      var diff = scrollTarget - scrollCurrent;
+      scrollCurrent += diff * ease;
+      if (Math.abs(diff) > 0.4) {
+        window.scrollTo(0, scrollCurrent);
+        requestAnimationFrame(smoothUpdate);
+      } else {
+        window.scrollTo(0, scrollTarget);
+        isAnimating = false;
+      }
+    }
+
+    window.addEventListener('wheel', function(e) {
+      var absX = Math.abs(e.deltaX), absY = Math.abs(e.deltaY);
+      // Let the horizontal swipe handler deal with predominantly horizontal events
+      if (absX > absY * 0.6) return;
+      e.preventDefault();
+      var delta = e.deltaY;
+      if (e.deltaMode === 1) delta *= 40;
+      if (e.deltaMode === 2) delta *= 800;
+      var maxScroll = Math.max(0, document.body.scrollHeight - window.innerHeight);
+      scrollTarget = Math.max(0, Math.min(maxScroll, scrollTarget + delta));
+      if (!isAnimating) { isAnimating = true; requestAnimationFrame(smoothUpdate); }
+    }, { passive: false });
+
+    window.addEventListener('scroll', function() {
+      if (!isAnimating) syncScroll();
+    }, { passive: true });
+  })();
+
   function setDate() {
     const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -2349,6 +2452,7 @@
   }
 
   setDate();
+  updateSideArrows(); // init side arrow visibility
   loadHabits();    // restore habit checkboxes (from file or localStorage)
   initFileAccess(); // reconnect File System API handle if previously granted
   renderHlog();       // render daily habit log on load
@@ -4114,3 +4218,382 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
   </div>
 
 </div>
+
+<!-- ── HUB TAB ──────────────────────────────────────────────────────────── -->
+<style>
+.hub-stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+@media (max-width: 700px) { .hub-stat-grid { grid-template-columns: repeat(2, 1fr); } }
+.hub-stat { border-radius: 14px; padding: 18px 20px; background: rgba(255,255,255,0.72); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.85); box-shadow: 0 2px 12px rgba(0,0,0,0.06); transition: transform 0.2s, box-shadow 0.2s; }
+.hub-stat:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+.hub-stat-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; }
+.hub-stat-val { font-size: 32px; font-weight: 800; line-height: 1; color: var(--text1); }
+.hub-stat-sub { font-size: 11px; color: var(--text3); margin-top: 5px; }
+.hub-stat-accent { color: #6366f1; }
+.hub-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+@media (max-width: 700px) { .hub-charts { grid-template-columns: 1fr; } }
+.hub-chart-card { border-radius: 14px; padding: 18px 20px; background: rgba(255,255,255,0.72); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.85); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.hub-chart-title { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text3); margin-bottom: 14px; }
+.hub-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 700px) { .hub-bottom { grid-template-columns: 1fr; } }
+.hub-task-item { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border2); font-size: 12px; }
+.hub-task-item:last-child { border-bottom: none; }
+.hub-task-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.hub-task-name { flex: 1; color: var(--text1); font-weight: 500; }
+.hub-task-pri { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 5px; }
+.hub-insight-row { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border2); font-size: 12px; }
+.hub-insight-row:last-child { border-bottom: none; }
+.hub-insight-icon { font-size: 16px; flex-shrink: 0; width: 22px; text-align: center; }
+.hub-insight-body { flex: 1; }
+.hub-insight-title { font-weight: 700; color: var(--text1); margin-bottom: 1px; }
+.hub-insight-detail { color: var(--text3); font-size: 11px; }
+.hub-wkbar { display: flex; gap: 6px; align-items: flex-end; height: 60px; margin-bottom: 4px; }
+.hub-wkbar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.hub-wkbar-fill { width: 100%; border-radius: 5px 5px 0 0; background: linear-gradient(180deg, #6366f1, #8b5cf6); transition: height 0.4s ease; min-height: 4px; }
+.hub-wkbar-fill.weekend { background: linear-gradient(180deg, #f59e0b, #f97316); }
+.hub-wkbar-lbl { font-size: 9px; color: var(--text3); font-weight: 600; }
+.hub-wkbar-pct { font-size: 9px; color: var(--text2); font-weight: 700; }
+</style>
+
+<div class="page" id="tab-hub">
+  <div class="section-header">
+    <div><h1>Hub</h1><p id="hub-greeting">Your command center — live insights from across your OS.</p></div>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="hub-stat-grid" id="hub-stats">
+    <div class="hub-stat">
+      <div class="hub-stat-label">Tasks Done</div>
+      <div class="hub-stat-val hub-stat-accent" id="hub-task-pct">—</div>
+      <div class="hub-stat-sub" id="hub-task-sub">loading…</div>
+    </div>
+    <div class="hub-stat">
+      <div class="hub-stat-label">Habit Avg</div>
+      <div class="hub-stat-val hub-stat-accent" id="hub-habit-avg">—</div>
+      <div class="hub-stat-sub" id="hub-habit-sub">loading…</div>
+    </div>
+    <div class="hub-stat">
+      <div class="hub-stat-label">Elite Days</div>
+      <div class="hub-stat-val" id="hub-elite">—</div>
+      <div class="hub-stat-sub" id="hub-elite-sub">≥ 85% habits done</div>
+    </div>
+    <div class="hub-stat">
+      <div class="hub-stat-label">Reflections</div>
+      <div class="hub-stat-val" id="hub-reflect-count">—</div>
+      <div class="hub-stat-sub" id="hub-reflect-sub">loading…</div>
+    </div>
+  </div>
+
+  <!-- Charts row -->
+  <div class="hub-charts">
+    <!-- Weekday vs Weekend habit % -->
+    <div class="hub-chart-card">
+      <div class="hub-chart-title">Habit % · Weekday vs Weekend</div>
+      <div id="hub-wkbar-wrap">
+        <div class="hub-wkbar" id="hub-wkbar"></div>
+        <div style="display:flex;gap:12px;margin-top:6px;">
+          <span style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:linear-gradient(180deg,#6366f1,#8b5cf6);"></span> Weekday
+          </span>
+          <span style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:linear-gradient(180deg,#f59e0b,#f97316);"></span> Weekend
+          </span>
+          <span id="hub-wkbar-note" style="font-size:10px;color:var(--text3);margin-left:auto;"></span>
+        </div>
+      </div>
+      <div id="hub-wk-empty" style="display:none;font-size:12px;color:var(--text3);padding:20px 0;text-align:center;">Log a few days to see this chart</div>
+    </div>
+
+    <!-- Last 14 days trend -->
+    <div class="hub-chart-card">
+      <div class="hub-chart-title">14-Day Habit Trend</div>
+      <canvas id="hub-trend-chart" height="90"></canvas>
+      <div id="hub-trend-empty" style="display:none;font-size:12px;color:var(--text3);padding:20px 0;text-align:center;">Log a few days to see this chart</div>
+    </div>
+  </div>
+
+  <!-- Bottom row: open tasks + insights -->
+  <div class="hub-bottom">
+    <!-- Open tasks -->
+    <div class="hub-chart-card">
+      <div class="hub-chart-title">Open Tasks <span id="hub-open-count" style="font-weight:800;color:#6366f1;font-size:12px;"></span></div>
+      <div id="hub-task-list"><div style="font-size:12px;color:var(--text3);">Loading…</div></div>
+      <div style="margin-top:12px;">
+        <button onclick="showTab('tasks')" style="font-size:11px;padding:6px 14px;border-radius:7px;border:1px solid var(--border);background:rgba(99,102,241,0.08);color:#6366f1;font-weight:700;cursor:pointer;">View all tasks →</button>
+      </div>
+    </div>
+
+    <!-- Smart insights -->
+    <div class="hub-chart-card">
+      <div class="hub-chart-title">Insights</div>
+      <div id="hub-insights"><div style="font-size:12px;color:var(--text3);">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- Task completion: weekday vs weekend breakdown -->
+  <div class="hub-chart-card" style="margin-top:14px;">
+    <div class="hub-chart-title">Task Completion · Priority Breakdown</div>
+    <div id="hub-pri-bars" style="display:flex;flex-direction:column;gap:10px;margin-top:4px;"></div>
+  </div>
+</div>
+
+<script>
+  // ── HUB ────────────────────────────────────────────────────────────────
+
+  var hubTrendChart = null;
+
+  function renderHub() {
+    const hlog     = loadHlog();
+    const taskList = (function(){ try { return JSON.parse(localStorage.getItem('lifeos_tasks') || '[]'); } catch(e){ return []; } })();
+    var reflList   = [];
+    try { reflList = JSON.parse(localStorage.getItem('lifeos_reflections') || '[]'); } catch(e) {}
+
+    // ── Greeting
+    const hr = new Date().getHours();
+    const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+    const gEl = document.getElementById('hub-greeting');
+    if (gEl) gEl.textContent = greet + ', Tom. Here\'s your command center.';
+
+    // ── Stat: Tasks
+    const totalT = taskList.length;
+    const doneT  = taskList.filter(t => t.done).length;
+    const pctT   = totalT ? Math.round((doneT / totalT) * 100) : 0;
+    const elPct  = document.getElementById('hub-task-pct');
+    const elSub  = document.getElementById('hub-task-sub');
+    if (elPct) elPct.textContent = pctT + '%';
+    if (elSub) elSub.textContent = doneT + ' of ' + totalT + ' completed';
+
+    // ── Stat: Habit avg
+    const habAvg = hlog.length ? Math.round(hlog.reduce((a,e) => a + e.pct, 0) / hlog.length) : null;
+    const elHab  = document.getElementById('hub-habit-avg');
+    const elHabS = document.getElementById('hub-habit-sub');
+    if (elHab) elHab.textContent = habAvg !== null ? habAvg + '%' : '—';
+    if (elHabS) elHabS.textContent = hlog.length ? 'avg over ' + hlog.length + ' days' : 'no days logged yet';
+
+    // ── Stat: Elite days
+    const elite = hlog.filter(e => e.pct >= 85).length;
+    const elEl  = document.getElementById('hub-elite');
+    const elElS = document.getElementById('hub-elite-sub');
+    if (elEl) elEl.textContent = elite;
+    if (elElS) elElS.textContent = hlog.length ? Math.round((elite/hlog.length)*100) + '% of all days' : '≥ 85% habits done';
+
+    // ── Stat: Reflections (use gist-loaded array if available)
+    var rLen = 0;
+    try {
+      var gistRaw = localStorage.getItem('lifeos_gist_cache');
+      if (gistRaw) {
+        var gistParsed = JSON.parse(gistRaw);
+        if (gistParsed && gistParsed.reflections) rLen = gistParsed.reflections.length;
+      }
+    } catch(e) {}
+    if (!rLen) rLen = reflList.length;
+    const elRef  = document.getElementById('hub-reflect-count');
+    const elRefS = document.getElementById('hub-reflect-sub');
+    if (elRef) elRef.textContent = rLen || '—';
+    if (elRefS) elRefS.textContent = rLen ? 'entries saved' : 'none yet';
+
+    // ── Weekday vs Weekend bar chart
+    const WEEKDAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+    const dayData  = { Monday:[], Tuesday:[], Wednesday:[], Thursday:[], Friday:[], Saturday:[], Sunday:[] };
+    hlog.forEach(e => { if (dayData[e.day]) dayData[e.day].push(e.pct); });
+    const dayAvg = d => dayData[d].length ? Math.round(dayData[d].reduce((a,v)=>a+v,0)/dayData[d].length) : null;
+    const days   = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const fullDays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    const avgs   = fullDays.map(d => dayAvg(d));
+    const hasAny = avgs.some(v => v !== null);
+    const wkBarEl  = document.getElementById('hub-wkbar');
+    const wkEmpEl  = document.getElementById('hub-wk-empty');
+    const wkWrapEl = document.getElementById('hub-wkbar-wrap');
+    const wkNoteEl = document.getElementById('hub-wkbar-note');
+
+    if (!hasAny) {
+      if (wkWrapEl) wkWrapEl.style.display = 'none';
+      if (wkEmpEl) wkEmpEl.style.display = 'block';
+    } else {
+      if (wkWrapEl) wkWrapEl.style.display = 'block';
+      if (wkEmpEl) wkEmpEl.style.display = 'none';
+      const maxV = Math.max(...avgs.filter(v=>v!==null), 1);
+      const wkdAvg = (function(){
+        var s=0,c=0; ['Monday','Tuesday','Wednesday','Thursday','Friday'].forEach(d=>{if(dayAvg(d)!==null){s+=dayAvg(d);c++;}});
+        return c ? Math.round(s/c) : null;
+      })();
+      const wkndAvg = (function(){
+        var s=0,c=0; ['Saturday','Sunday'].forEach(d=>{if(dayAvg(d)!==null){s+=dayAvg(d);c++;}});
+        return c ? Math.round(s/c) : null;
+      })();
+      if (wkNoteEl) {
+        if (wkdAvg !== null && wkndAvg !== null) {
+          var diff = wkdAvg - wkndAvg;
+          wkNoteEl.textContent = diff > 0 ? 'Weekdays ↑ ' + diff + '% higher' : diff < 0 ? 'Weekends ↑ ' + Math.abs(diff) + '% higher' : 'Even split';
+        }
+      }
+      if (wkBarEl) {
+        wkBarEl.innerHTML = days.map((lbl, i) => {
+          const val    = avgs[i];
+          const isWknd = i >= 5;
+          const height = val !== null ? Math.round((val / maxV) * 52) + 'px' : '4px';
+          const opacity = val !== null ? '1' : '0.25';
+          return `<div class="hub-wkbar-col">
+            <div class="hub-wkbar-pct">${val !== null ? val+'%' : ''}</div>
+            <div class="hub-wkbar-fill${isWknd?' weekend':''}" style="height:${height};opacity:${opacity};"></div>
+            <div class="hub-wkbar-lbl">${lbl}</div>
+          </div>`;
+        }).join('');
+      }
+    }
+
+    // ── 14-day trend line chart
+    const last14 = hlog.slice(0, 14).reverse();
+    const trendEl = document.getElementById('hub-trend-chart');
+    const trendEmpEl = document.getElementById('hub-trend-empty');
+    if (last14.length < 2) {
+      if (trendEl) trendEl.style.display = 'none';
+      if (trendEmpEl) trendEmpEl.style.display = 'block';
+    } else {
+      if (trendEl) trendEl.style.display = 'block';
+      if (trendEmpEl) trendEmpEl.style.display = 'none';
+      const labels = last14.map(e => e.date.split(',')[0]);
+      const data   = last14.map(e => e.pct);
+      if (hubTrendChart) { hubTrendChart.destroy(); hubTrendChart = null; }
+      hubTrendChart = new Chart(trendEl, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            data,
+            borderColor: '#6366f1',
+            backgroundColor: 'rgba(99,102,241,0.08)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true,
+            pointBackgroundColor: '#6366f1',
+            pointRadius: 3,
+            pointHoverRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { min: 0, max: 100, ticks: { font: { size: 10 }, color: '#aaa', stepSize: 25, callback: v => v+'%' }, grid: { color: 'rgba(0,0,0,0.05)' } },
+            x: { ticks: { font: { size: 9 }, color: '#aaa', maxRotation: 45 }, grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // ── Open tasks list
+    const openTasks = taskList.filter(t => !t.done);
+    const tlEl = document.getElementById('hub-task-list');
+    const ocEl = document.getElementById('hub-open-count');
+    if (ocEl) ocEl.textContent = openTasks.length ? '(' + openTasks.length + ' open)' : '';
+    const PCOLS = { high: '#ef4444', med: '#f59e0b', low: '#6366f1' };
+    const PLBL  = { high: '🔴 High', med: '🟡 Med', low: '🔵 Low' };
+    if (tlEl) {
+      const sorted = [...openTasks].sort((a,b) => ({ high:0, med:1, low:2 }[a.priority]||1) - ({ high:0, med:1, low:2 }[b.priority]||1));
+      if (!sorted.length) {
+        tlEl.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:10px 0;">All tasks complete 🎉</div>';
+      } else {
+        tlEl.innerHTML = sorted.slice(0, 7).map(t => `
+          <div class="hub-task-item">
+            <div class="hub-task-dot" style="background:${PCOLS[t.priority]||'#aaa'};"></div>
+            <div class="hub-task-name">${t.name}</div>
+            <div class="hub-task-pri" style="background:${PCOLS[t.priority]||'#aaa'}22;color:${PCOLS[t.priority]||'#aaa'};">${(PLBL[t.priority]||'—').replace(/[🔴🟡🔵]\s*/,'')}</div>
+          </div>`).join('');
+        if (sorted.length > 7) {
+          tlEl.innerHTML += `<div style="font-size:11px;color:var(--text3);padding:6px 0;">+${sorted.length - 7} more</div>`;
+        }
+      }
+    }
+
+    // ── Priority breakdown bars
+    const priEl = document.getElementById('hub-pri-bars');
+    if (priEl) {
+      const pris = ['high','med','low'];
+      const priLbls = { high:'🔴 High Priority', med:'🟡 Medium Priority', low:'🔵 Long-term' };
+      priEl.innerHTML = pris.map(p => {
+        const all  = taskList.filter(t => t.priority === p);
+        const done = all.filter(t => t.done).length;
+        const tot  = all.length;
+        const pct  = tot ? Math.round((done/tot)*100) : 0;
+        if (!tot) return '';
+        return `<div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+            <span style="font-size:12px;font-weight:600;color:var(--text2);">${priLbls[p]}</span>
+            <span style="font-size:12px;font-weight:700;color:${PCOLS[p]};">${done}/${tot} &nbsp;${pct}%</span>
+          </div>
+          <div style="height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;">
+            <div style="height:100%;width:${pct}%;background:${PCOLS[p]};border-radius:4px;transition:width 0.5s ease;"></div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── Insights
+    const insEl = document.getElementById('hub-insights');
+    if (insEl) {
+      const insights = [];
+
+      // Best habit day
+      if (hlog.length >= 3) {
+        const best = [...hlog].sort((a,b) => b.pct - a.pct)[0];
+        insights.push({ icon: '🏆', title: 'Best day: ' + best.pct + '%', detail: best.day + ', ' + best.date });
+      }
+
+      // Weekday vs weekend note
+      const wkdA = (function(){
+        var entries = hlog.filter(e => !['Saturday','Sunday'].includes(e.day));
+        return entries.length ? Math.round(entries.reduce((a,e)=>a+e.pct,0)/entries.length) : null;
+      })();
+      const wkndA = (function(){
+        var entries = hlog.filter(e => ['Saturday','Sunday'].includes(e.day));
+        return entries.length ? Math.round(entries.reduce((a,e)=>a+e.pct,0)/entries.length) : null;
+      })();
+      if (wkdA !== null && wkndA !== null) {
+        const diff = wkdA - wkndA;
+        if (diff > 5) insights.push({ icon: '📅', title: 'Weekdays beat weekends by ' + diff + '%', detail: 'Weekday avg ' + wkdA + '% vs weekend ' + wkndA + '%' });
+        else if (diff < -5) insights.push({ icon: '🌅', title: 'Weekends beat weekdays by ' + Math.abs(diff) + '%', detail: 'Weekend avg ' + wkndA + '% vs weekday ' + wkdA + '%' });
+        else insights.push({ icon: '⚖️', title: 'Consistent across the week', detail: 'Weekday ' + wkdA + '% ≈ weekend ' + wkndA + '%' });
+      }
+
+      // Streak of elite days
+      var streak = 0;
+      for (var s = 0; s < hlog.length; s++) {
+        if (hlog[s].pct >= 85) streak++;
+        else break;
+      }
+      if (streak >= 2) insights.push({ icon: '🔥', title: streak + '-day elite streak', detail: 'Last ' + streak + ' days all ≥ 85%' });
+      else if (streak === 1) insights.push({ icon: '✨', title: 'Elite day yesterday', detail: 'Keep it going today!' });
+
+      // High priority tasks pending
+      const highOpen = taskList.filter(t => !t.done && t.priority === 'high');
+      if (highOpen.length) insights.push({ icon: '⚡', title: highOpen.length + ' high-priority task' + (highOpen.length > 1 ? 's' : '') + ' open', detail: highOpen[0].name });
+
+      // Task completion rate
+      if (totalT >= 5) {
+        insights.push({ icon: pctT >= 70 ? '✅' : '📋', title: pctT + '% overall task completion', detail: doneT + ' done, ' + (totalT - doneT) + ' remaining' });
+      }
+
+      // Habit trend (last 7 vs prev 7)
+      if (hlog.length >= 14) {
+        const recent7 = Math.round(hlog.slice(0,7).reduce((a,e)=>a+e.pct,0)/7);
+        const prev7   = Math.round(hlog.slice(7,14).reduce((a,e)=>a+e.pct,0)/7);
+        const tDiff   = recent7 - prev7;
+        if (tDiff > 3) insights.push({ icon: '📈', title: 'Trending up ' + tDiff + '% vs last week', detail: 'Last 7 days: ' + recent7 + '% avg' });
+        else if (tDiff < -3) insights.push({ icon: '📉', title: 'Down ' + Math.abs(tDiff) + '% vs last week', detail: 'Last 7 days: ' + recent7 + '% avg' });
+      }
+
+      if (!insights.length) {
+        insEl.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:10px 0;">Log a few days of habits to unlock insights.</div>';
+      } else {
+        insEl.innerHTML = insights.map(i => `
+          <div class="hub-insight-row">
+            <div class="hub-insight-icon">${i.icon}</div>
+            <div class="hub-insight-body">
+              <div class="hub-insight-title">${i.title}</div>
+              <div class="hub-insight-detail">${i.detail}</div>
+            </div>
+          </div>`).join('');
+      }
+    }
+  }
+</script>
