@@ -2373,6 +2373,7 @@
     currentTabIdx = TAB_ORDER.indexOf(id);
     updateSideArrows();
     if (id === 'hub' && typeof renderHub === 'function') renderHub();
+    if (id === 'alcohol') setTimeout(function(){ if(typeof checkRippleVisible==='function') checkRippleVisible(); }, 120);
     if (fromSwipe) {
       var ind = document.getElementById('swipe-indicator');
       if (ind) {
@@ -4241,12 +4242,296 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
     </div>
   </div>
 
+  <!-- ── THE 4-DAY RIPPLE ─────────────────────────────────────────────── -->
+  <div class="card" id="ripple-card" style="overflow:hidden;">
+    <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:4px;">🌊 The 4-Day Ripple Effect</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">One drink on Friday or Saturday. Here's what you actually signed up for.</div>
+
+    <!-- Timeline connector -->
+    <div class="ripple-timeline">
+
+      <!-- Day 0 -->
+      <div class="ripple-day ripple-day-0" data-delay="0">
+        <div class="ripple-dot" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);box-shadow:0 0 0 4px rgba(99,102,241,0.18);">🍺</div>
+        <div class="ripple-connector"></div>
+        <div class="ripple-content">
+          <div class="ripple-label" style="color:#6366f1;">Fri / Sat Night</div>
+          <div class="ripple-title">The Choice</div>
+          <div class="ripple-tags">
+            <span class="ripple-tag" style="background:rgba(99,102,241,0.1);color:#6366f1;">Feels good now</span>
+            <span class="ripple-tag" style="background:rgba(239,68,68,0.1);color:#ef4444;">Costs 4 days</span>
+          </div>
+          <div class="ripple-detail">One night. But the debt doesn't clear until Tuesday.</div>
+        </div>
+      </div>
+
+      <!-- Day 1 -->
+      <div class="ripple-day ripple-day-1" data-delay="120">
+        <div class="ripple-dot" style="background:linear-gradient(135deg,#ef4444,#f97316);box-shadow:0 0 0 4px rgba(239,68,68,0.18);">💀</div>
+        <div class="ripple-connector"></div>
+        <div class="ripple-content">
+          <div class="ripple-label" style="color:#ef4444;">Day +1 · Sat or Sun</div>
+          <div class="ripple-title">Hangover</div>
+          <div class="ripple-tags">
+            <span class="ripple-tag" style="background:rgba(239,68,68,0.1);color:#ef4444;">Nausea / headache</span>
+            <span class="ripple-tag" style="background:rgba(239,68,68,0.1);color:#ef4444;">Zero output</span>
+            <span class="ripple-tag" style="background:rgba(239,68,68,0.1);color:#ef4444;">Skipped protocol</span>
+          </div>
+          <div class="ripple-detail">You're couch-bound. PF protocol skipped. Gym not happening. Work block gone. Streak day wasted.</div>
+          <div class="ripple-broken">
+            <div class="ripple-broken-title">Progress broken</div>
+            <div class="ripple-broken-items">
+              <span>❌ PF protocol</span><span>❌ Gym</span><span>❌ Work block</span><span>❌ Nutrition</span><span>❌ Habit score</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Day 2 -->
+      <div class="ripple-day ripple-day-2" data-delay="240">
+        <div class="ripple-dot" style="background:linear-gradient(135deg,#f59e0b,#f97316);box-shadow:0 0 0 4px rgba(245,158,11,0.18);">🌫️</div>
+        <div class="ripple-connector"></div>
+        <div class="ripple-content">
+          <div class="ripple-label" style="color:#f59e0b;">Day +2 · Sun or Mon</div>
+          <div class="ripple-title">Brain Fog + Can't Wake Up</div>
+          <div class="ripple-tags">
+            <span class="ripple-tag" style="background:rgba(245,158,11,0.1);color:#f59e0b;">Disrupted sleep</span>
+            <span class="ripple-tag" style="background:rgba(245,158,11,0.1);color:#f59e0b;">Can't wake up</span>
+            <span class="ripple-tag" style="background:rgba(245,158,11,0.1);color:#f59e0b;">Foggy thinking</span>
+          </div>
+          <div class="ripple-detail">Sleep architecture is wrecked — no deep sleep. You wake up later, slower, hazier. Alcohol suppresses REM and rebounds with fragmented light sleep that leaves you more exhausted than before.</div>
+          <div class="ripple-broken">
+            <div class="ripple-broken-title">Progress broken</div>
+            <div class="ripple-broken-items">
+              <span>❌ 6:15am alarm</span><span>❌ Morning ritual</span><span>❌ Office on time</span><span>❌ Focus / modeling</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Day 3 -->
+      <div class="ripple-day ripple-day-3" data-delay="360">
+        <div class="ripple-dot" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);box-shadow:0 0 0 4px rgba(139,92,246,0.18);">😤</div>
+        <div class="ripple-connector"></div>
+        <div class="ripple-content">
+          <div class="ripple-label" style="color:#8b5cf6;">Day +3 · Mon or Tue</div>
+          <div class="ripple-title">Can't Wake Up · Brain Fog · Agitation</div>
+          <div class="ripple-tags">
+            <span class="ripple-tag" style="background:rgba(139,92,246,0.1);color:#8b5cf6;">Irritable</span>
+            <span class="ripple-tag" style="background:rgba(139,92,246,0.1);color:#8b5cf6;">Anxious</span>
+            <span class="ripple-tag" style="background:rgba(139,92,246,0.1);color:#8b5cf6;">Still foggy</span>
+            <span class="ripple-tag" style="background:rgba(139,92,246,0.1);color:#8b5cf6;">Still slow</span>
+          </div>
+          <div class="ripple-detail">GABA and dopamine are still recalibrating. Your nervous system was suppressed by alcohol and is now hyperexcitable — that's the irritability and anxiety. This is withdrawal in miniature, even after a single night.</div>
+          <div class="ripple-broken">
+            <div class="ripple-broken-title">Progress broken</div>
+            <div class="ripple-broken-items">
+              <span>❌ Mood / patience</span><span>❌ Work quality</span><span>❌ Social confidence</span><span>❌ PF tension ↑</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Day 4 -->
+      <div class="ripple-day" data-delay="480" style="--ripple-enter-y:20px;">
+        <div class="ripple-dot" style="background:linear-gradient(135deg,#10b981,#06b6d4);box-shadow:0 0 0 4px rgba(16,185,129,0.18);">✅</div>
+        <div class="ripple-content" style="border-color:rgba(16,185,129,0.25);background:rgba(16,185,129,0.04);">
+          <div class="ripple-label" style="color:#10b981;">Day +4 · Tue or Wed</div>
+          <div class="ripple-title" style="color:#10b981;">Finally Normal</div>
+          <div class="ripple-tags">
+            <span class="ripple-tag" style="background:rgba(16,185,129,0.1);color:#10b981;">Clear head</span>
+            <span class="ripple-tag" style="background:rgba(16,185,129,0.1);color:#10b981;">Energy back</span>
+            <span class="ripple-tag" style="background:rgba(16,185,129,0.1);color:#10b981;">Mood stable</span>
+          </div>
+          <div class="ripple-detail">You feel like yourself again. But you burned 3 days of momentum, missed 3+ protocol sessions, and reset any streak you had going. The week is already half over.</div>
+        </div>
+      </div>
+
+    </div><!-- /timeline -->
+
+    <!-- Progress cycle visual -->
+    <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border2);">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:14px;">How Your Progress Cycle Breaks</div>
+
+      <div class="ripple-cycle-row" id="ripple-cycle-row">
+        <div class="ripple-cycle-block ripple-cycle-build" data-cdelay="0">
+          <div class="ripple-cycle-icon">📈</div>
+          <div class="ripple-cycle-name">Mon–Fri</div>
+          <div class="ripple-cycle-sub">Building momentum<br>Habits stacking<br>Streak growing</div>
+        </div>
+        <div class="ripple-cycle-arrow" data-cdelay="80">→</div>
+        <div class="ripple-cycle-block ripple-cycle-drink" data-cdelay="160">
+          <div class="ripple-cycle-icon">🍺</div>
+          <div class="ripple-cycle-name">Fri/Sat</div>
+          <div class="ripple-cycle-sub">One night out<br>"Just this once"</div>
+        </div>
+        <div class="ripple-cycle-arrow" data-cdelay="240">→</div>
+        <div class="ripple-cycle-block ripple-cycle-crash" data-cdelay="320">
+          <div class="ripple-cycle-icon">💥</div>
+          <div class="ripple-cycle-name">3 Days Lost</div>
+          <div class="ripple-cycle-sub">Streak broken<br>Protocol missed<br>Back to zero</div>
+        </div>
+        <div class="ripple-cycle-arrow" data-cdelay="400">→</div>
+        <div class="ripple-cycle-block ripple-cycle-restart" data-cdelay="480">
+          <div class="ripple-cycle-icon">🔄</div>
+          <div class="ripple-cycle-name">Restart Again</div>
+          <div class="ripple-cycle-sub">Day 1. Again.<br>Every. Single. Week.</div>
+        </div>
+      </div>
+
+      <div style="background:rgba(239,68,68,0.07);border-left:3px solid #ef4444;border-radius:0 8px 8px 0;padding:12px 14px;margin-top:16px;font-size:12px;color:var(--text2);line-height:1.7;">
+        <strong style="color:#ef4444;">The math:</strong> If you drink every weekend, you are never more than 4 days sober. The compounding gains that build Tom at 35 require <em>sustained</em> momentum — not a weekly reset. The streak isn't just a number. It's the mechanism.
+      </div>
+    </div>
+  </div>
+
   <div class="card" style="background:var(--teal-bg);border-color:rgba(29,158,117,0.3);text-align:center;">
     <div style="font-size:15px;font-weight:700;color:var(--teal-dark);margin-bottom:6px;">Remember Cincinnati.</div>
     <div style="font-size:12px;color:var(--text2);line-height:1.8;max-width:500px;margin:0 auto;">Sober. Walked in. Felt the discomfort. Talked to her. Got the number. Left at 11:30. Drove home proud. That is who you actually are.</div>
   </div>
 
 </div>
+
+<!-- ── RIPPLE EFFECT STYLES ────────────────────────────────────────────── -->
+<style>
+/* Timeline */
+.ripple-timeline { display: flex; flex-direction: column; gap: 0; }
+
+/* Each day row */
+.ripple-day {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+.ripple-day.ripple-visible { opacity: 1; transform: translateY(0); }
+
+/* Left column: dot + vertical line */
+.ripple-dot {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  margin-top: 2px;
+}
+.ripple-connector {
+  width: 2px;
+  background: linear-gradient(180deg, rgba(99,102,241,0.25), rgba(99,102,241,0.05));
+  flex-shrink: 0;
+  align-self: stretch;
+  margin: 40px 0 0 18px;
+  min-height: 24px;
+}
+
+/* Content card */
+.ripple-content {
+  flex: 1;
+  margin-left: 14px;
+  margin-bottom: 20px;
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.8);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.ripple-content:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.09); transform: translateY(-1px); }
+.ripple-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 3px; }
+.ripple-title { font-size: 14px; font-weight: 800; color: var(--text1); margin-bottom: 8px; }
+.ripple-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.ripple-tag { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+.ripple-detail { font-size: 12px; color: var(--text2); line-height: 1.65; }
+
+/* Broken progress box */
+.ripple-broken {
+  margin-top: 10px;
+  background: rgba(239,68,68,0.06);
+  border-radius: 8px;
+  padding: 9px 12px;
+  border: 1px solid rgba(239,68,68,0.15);
+}
+.ripple-broken-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #ef4444; margin-bottom: 6px; }
+.ripple-broken-items { display: flex; flex-wrap: wrap; gap: 6px; }
+.ripple-broken-items span { font-size: 11px; color: var(--text2); background: rgba(239,68,68,0.08); padding: 2px 8px; border-radius: 5px; }
+
+/* Progress cycle */
+.ripple-cycle-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.ripple-cycle-block {
+  flex: 1;
+  min-width: 80px;
+  border-radius: 10px;
+  padding: 12px 10px;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+.ripple-cycle-block.ripple-visible { opacity: 1; transform: translateY(0); }
+.ripple-cycle-build  { background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2); }
+.ripple-cycle-drink  { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); }
+.ripple-cycle-crash  { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); }
+.ripple-cycle-restart{ background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.2); }
+.ripple-cycle-icon { font-size: 20px; margin-bottom: 4px; }
+.ripple-cycle-name { font-size: 11px; font-weight: 800; color: var(--text1); margin-bottom: 4px; }
+.ripple-cycle-sub { font-size: 10px; color: var(--text3); line-height: 1.6; }
+.ripple-cycle-arrow {
+  font-size: 18px; color: var(--text3); flex-shrink: 0;
+  opacity: 0; transition: opacity 0.4s ease;
+}
+.ripple-cycle-arrow.ripple-visible { opacity: 1; }
+</style>
+
+<script>
+// ── Ripple scroll-trigger animations
+(function() {
+  function checkRipple() { checkRippleVisible(); }
+  window.checkRippleVisible = function() {
+    // Timeline days
+    document.querySelectorAll('.ripple-day').forEach(function(el) {
+      var rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight - 60) {
+        var delay = parseInt(el.getAttribute('data-delay') || '0');
+        setTimeout(function() { el.classList.add('ripple-visible'); }, delay);
+      }
+    });
+    // Cycle blocks & arrows
+    document.querySelectorAll('.ripple-cycle-block, .ripple-cycle-arrow').forEach(function(el) {
+      var rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight - 40) {
+        var delay = parseInt(el.getAttribute('data-cdelay') || '0');
+        setTimeout(function() { el.classList.add('ripple-visible'); }, delay);
+      }
+    });
+  };
+  window.addEventListener('scroll', checkRipple, { passive: true });
+  // Also fire when switching to the alcohol tab
+  var _origShow = window.showTab;
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(checkRipple, 100);
+  });
+  // Hook into tab switching
+  (function waitForShowTab() {
+    if (typeof showTab === 'function') {
+      var orig = showTab;
+      window._rippleHooked = true;
+    }
+    // Just re-run on scroll — that catches it
+  })();
+  setTimeout(checkRipple, 300);
+})();
+</script>
 
 <!-- ── HUB TAB ──────────────────────────────────────────────────────────── -->
 <style>
