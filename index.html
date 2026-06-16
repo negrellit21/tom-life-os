@@ -847,6 +847,27 @@
     box-shadow: 0 1px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9);
   }
 
+  /* Hypermode row shimmer */
+  @keyframes hyperPulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.25);opacity:0.7} }
+  @keyframes hyperShimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(250%)} }
+  .hypermode-shimmer {
+    position:absolute;top:0;left:0;width:40%;height:100%;
+    background:linear-gradient(90deg,transparent,rgba(139,92,246,0.12),transparent);
+    animation:hyperShimmer 2.8s ease-in-out infinite;
+    pointer-events:none;
+  }
+  .hypermode-row:hover { border-color:rgba(99,102,241,0.6) !important; box-shadow:0 4px 20px rgba(99,102,241,0.18); }
+
+  /* Harvey row glow */
+  @keyframes harveyGlow { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
+  .harvey-glow {
+    position:absolute;top:-20px;right:-20px;width:120px;height:120px;
+    background:radial-gradient(circle,rgba(251,191,36,0.15) 0%,transparent 70%);
+    animation:harveyGlow 3s ease-in-out infinite;
+    pointer-events:none;
+  }
+  .harvey-row:hover { border-color:rgba(251,191,36,0.7) !important; box-shadow:0 4px 24px rgba(251,191,36,0.15); }
+
   /* Swipe indicator — shows briefly on swipe */
   #swipe-indicator {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) scale(0.8);
@@ -1077,6 +1098,18 @@
     <div class="habit-row office-only" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">2-minute task start rule — used at least once</div><div class="habit-why">Name the next physical action. Open the file. Type one thing. Break initiation paralysis.</div></div><span class="tag tag-amber">High</span></div>
     <div class="habit-row office-only" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Ask at least 1 question at work today</div><div class="habit-why">One question. This is how the imposter loop breaks.</div></div><span class="tag tag-amber">High</span></div>
     <div class="habit-row office-only" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">30 min of financial modeling study</div><div class="habit-why">The skill that closes the gap between performing and being.</div></div><span class="tag tag-amber">High</span></div>
+    <div class="habit-row office-only harvey-row" onclick="toggle(this)" style="background:linear-gradient(135deg,#0f0f14,#1a1a24);border:1.5px solid rgba(251,191,36,0.35);border-radius:10px;margin-bottom:6px;position:relative;overflow:hidden;">
+      <div class="harvey-glow"></div>
+      <div class="hcheck" style="border-color:rgba(251,191,36,0.5);"></div>
+      <div class="habit-content">
+        <div class="habit-name" style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:14px;">⚖️</span>
+          <span style="color:#fff;font-weight:800;letter-spacing:.01em;">Follow the </span><span style="background:linear-gradient(90deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:900;font-style:italic;">'Harvey'</span><span style="color:#fff;font-weight:800;"> protocol</span>
+        </div>
+        <div class="habit-why" style="color:rgba(251,191,36,0.55);">Own the room. Ask the hard question. Don't perform competence — be it. Harvey doesn't wait to feel ready.</div>
+      </div>
+      <span class="tag" style="background:linear-gradient(135deg,#92400e,#b45309);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);white-space:nowrap;font-weight:800;">Work</span>
+    </div>
 
     <div class="habit-group-label dayoff-only">Work block (day off)</div>
     <div class="habit-row dayoff-only" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">2-hour home work block — completed</div><div class="habit-why">Set a start time, close all tabs, put on focus music. Financial modeling, emails, or any open work task. 2-minute rule to begin.</div></div><span class="tag tag-amber">High</span></div>
@@ -1163,6 +1196,19 @@
     <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">No masturbation</div><div class="habit-why">Directly worsens pelvic floor tension. Also removes a primary avoidance exit.</div></div><span class="tag tag-red">Critical</span></div>
 
     <div class="habit-group-label">When I get home from work or gym</div>
+    <div class="habit-row hypermode-row" onclick="toggle(this)" style="background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(139,92,246,0.10));border:1.5px solid rgba(99,102,241,0.3);border-radius:10px;margin-bottom:6px;position:relative;overflow:hidden;">
+      <div class="hypermode-shimmer"></div>
+      <div class="hcheck"></div>
+      <div class="habit-content">
+        <div class="habit-name" style="display:flex;align-items:center;gap:7px;">
+          <span style="font-size:15px;animation:hyperPulse 1.8s ease-in-out infinite;">⚡</span>
+          <span style="background:linear-gradient(90deg,#6366f1,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:800;letter-spacing:-.01em;">HYPERMODE</span>
+          <span style="color:var(--text1);font-weight:700;">— Unpack backpack &amp; gym bag within 2 min</span>
+        </div>
+        <div class="habit-why" style="color:rgba(99,102,241,0.75);">The moment you walk in. Drop nothing. Unpack everything. Bags empty = next morning has zero friction.</div>
+      </div>
+      <span class="tag" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;white-space:nowrap;">2 min</span>
+    </div>
     <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Take smoothie pack out of freezer — let it thaw for 20 min</div><div class="habit-why">↳ Do this the moment you walk in. By the time you've changed and settled, it's ready to blend in the morning.</div></div><span class="tag tag-green">Nutrition</span></div>
 
     <div class="habit-group-label">Evening ritual</div>
@@ -1170,7 +1216,6 @@
     <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Blender bottle prepped — creatine, electrolytes &amp; beet powder loaded, ready to mix in the morning</div><div class="habit-why">Zero friction in the morning. Powders in tonight = first habit done before you're even awake.</div></div><span class="tag tag-green">Health</span></div>
     <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Lumosity — complete the daily 5 game goal</div><div class="habit-why">Cognitive training for processing speed + memory. Concussion protocol. Wind down with brain work, not scrolling.</div></div><span class="tag tag-blue">Mind</span></div>
     <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Gym bag packed — flip flops, towel, ready for steam room &amp; hot tub</div><div class="habit-why">Pack tonight so tomorrow morning has zero friction. No excuses.</div></div><span class="tag tag-green">Health</span></div>
-    <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Phone in kitchen by 10:45pm</div><div class="habit-why">Non-negotiable. The highest-leverage single habit in the system. Fixes sleep, morning, and everything downstream.</div></div><span class="tag tag-red">Critical</span></div>
     <div class="habit-row office-only" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Work outfit laid out in the bathroom — checked against tomorrow's weather</div><div class="habit-why">No decisions in the morning. Pick it tonight, check the forecast, done.</div></div><span class="tag tag-blue">Mind</span></div>
     <div class="pf-wrap office-only">
       <div class="habit-row" onclick="toggle(this)" style="border-bottom:none;">
@@ -1192,6 +1237,7 @@
       </div>
     </div>
     <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Plan tomorrow — name one specific task</div><div class="habit-why">What's the first thing you'll do when you sit down tomorrow? Write it.</div></div><span class="tag tag-blue">Mind</span></div>
+    <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">Read 10 pages of a book &amp; annotate</div><div class="habit-why">Wind down with your mind engaged, not scrolling. Annotation means you're processing, not just consuming — this is how reading compounds over time.</div></div><span class="tag tag-blue">Mind</span></div>
     <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">All devices charging — phones, AirPods, work &amp; personal laptop</div><div class="habit-why">↳ Nothing worse than a dead device derailing the morning.</div></div><span class="tag tag-blue">Prep</span></div>
     <div class="habit-row" onclick="toggle(this)"><div class="hcheck"></div><div class="habit-content"><div class="habit-name">In bed by 11pm — no laptop, no TV in bed</div><div class="habit-why">Phone is already in kitchen. Bedroom is for sleep only.</div></div><span class="tag tag-red">Critical</span></div>
 
@@ -1321,7 +1367,8 @@
     <div class="info-row"><div class="info-row-tag"><span class="tag tag-red">Escape</span></div><div><div class="info-text">Impulse shopping (Amazon, coffee makers, pillows)</div><div class="info-sub">Trigger: discomfort with self. Cost: money + $100k goal.</div></div></div>
     <div class="info-row"><div class="info-row-tag"><span class="tag tag-amber">Escape</span></div><div><div class="info-text">Taking a bath during work hours</div><div class="info-sub">Trigger: threatening work task. Cost: productivity + job.</div></div></div>
     <div class="info-row"><div class="info-row-tag"><span class="tag tag-amber">Escape</span></div><div><div class="info-text">Dating app binges (1hr Tinder/Hinge, delete next day)</div><div class="info-sub">Trigger: loneliness or restlessness. Same binge/purge cycle.</div></div></div>
-    <div class="insight-box" style="margin-top:12px;"><p>These are not five problems. They are one problem — an inability to sit with discomfort — expressed in five currencies. The fix is building distress tolerance, not attacking each behavior separately.</p></div>
+    <div class="info-row"><div class="info-row-tag"><span class="tag tag-red">Escape</span></div><div><div class="info-text">Bed nesting — curling up and doomscrolling on your phone</div><div class="info-sub">Trigger: hangover, anxiety, overwhelm. You crawl into bed, curl up, and disappear into your phone for hours. It feels like rest but it's avoidance — the anxiety is still there when you surface, usually worse. Cost: the entire day, and deeper anxiety tomorrow.</div></div></div>
+    <div class="insight-box" style="margin-top:12px;"><p>These are not six problems. They are one problem — an inability to sit with discomfort — expressed in six currencies. The bed nesting and the doomscrolling and the impulse shopping are all the same move: disappear until the feeling passes. It never passes. It compounds. The fix is building distress tolerance, not attacking each behavior separately.</p></div>
   </div>
 
   <div class="card">
