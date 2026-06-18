@@ -27,17 +27,58 @@
   html, body { overflow-x: hidden; max-width: 100vw; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
   /* NAV */
-  .nav { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
-  .nav-inner { max-width: 900px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 0; }
-  .nav-brand { font-size: 15px; font-weight: 600; color: var(--text); padding: 16px 20px 16px 0; border-right: 1px solid var(--border2); margin-right: 8px; white-space: nowrap; display: flex; align-items: center; gap: 9px; }
+  .nav {
+    position: fixed;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    pointer-events: none;
+    width: calc(100% - 40px);
+    max-width: 860px;
+  }
+  .nav-inner {
+    display: flex; align-items: center; gap: 0;
+    pointer-events: auto;
+    overflow: hidden; /* brand stays locked */
+    background: rgba(255,255,255,0.86);
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    border-radius: 50px;
+    padding: 5px 10px;
+    box-shadow: 0 4px 28px rgba(0,0,0,0.08), 0 1px 6px rgba(0,0,0,0.05),
+                inset 0 0 0 1px rgba(255,255,255,0.9);
+  }
+  /* tabs scroll inside the pill; brand stays fixed */
+  .nav-tabs {
+    display: flex; align-items: center; gap: 0;
+    overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+    flex: 1;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-brand {
+    font-size: 14px; font-weight: 600; color: var(--text1);
+    padding: 8px 14px 8px 4px; margin-right: 4px;
+    border-right: 1px solid var(--border2);
+    white-space: nowrap; display: flex; align-items: center; gap: 8px;
+    flex-shrink: 0;
+  }
   .nav-brand span { color: var(--text3); font-weight: 400; }
-  .nav-logo { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .nav-logo svg { width: 16px; height: 16px; }
-  .tab { padding: 18px 16px; font-size: 13px; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; transition: color 0.15s; }
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+  .nav-logo {
+    width: 26px; height: 26px; flex-shrink: 0;
+    border-radius: 7px; background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .nav-logo svg { width: 15px; height: 15px; }
+  .tab {
+    padding: 8px 12px; font-size: 13px; font-weight: 500;
+    color: var(--text2); cursor: pointer;
+    white-space: nowrap; border-radius: 30px; flex-shrink: 0;
+    transition: color 0.15s, background 0.2s;
+  }
+  .tab:hover { color: var(--text1); background: rgba(99,102,241,0.07); }
+  .tab.active { color: #6366f1; font-weight: 600; background: rgba(99,102,241,0.10); }
   /* LAYOUT */
-  .page { display: none; max-width: 900px; margin: 0 auto; padding: 76px 20px 60px; }
+  .page { display: none; max-width: 900px; margin: 0 auto; padding: 82px 20px 60px; }
   .page.active { display: block; }
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
@@ -450,13 +491,7 @@
   body { background: #f7f7f8; }
 
   /* ── NAV — frosted glass ───────────────────────────────────────────── */
-  .nav {
-    background: rgba(255,255,255,0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(0,0,0,0.07);
-    box-shadow: var(--shadow-sm);
-  }
+  .nav { background: transparent !important; border-bottom: none !important; box-shadow: none !important; }
   .nav-logo {
     background: linear-gradient(135deg, #6366f1, #8b5cf6);
     box-shadow: 0 2px 8px rgba(99,102,241,0.35);
@@ -737,13 +772,7 @@
   .nav, .page { position: relative; z-index: 1; }
 
   /* Nav — deeper glass */
-  .nav {
-    background: rgba(255,255,255,0.75) !important;
-    backdrop-filter: blur(20px) saturate(1.4) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(1.4) !important;
-    border-bottom: 1px solid rgba(255,255,255,0.6) !important;
-    box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.04) !important;
-  }
+  .nav { background: transparent !important; border-bottom: none !important; box-shadow: none !important; }
 
   /* Cards — frosted glass */
   .card {
@@ -959,17 +988,19 @@
       </div>
       Life OS <span>· Tom</span>
     </div>
-    <div class="tab" onclick="showTab('hub')">⚡ Hub</div>
-    <div class="tab active" onclick="showTab('daily')">Daily</div>
-    <div class="tab" onclick="showTab('system')">My System</div>
-    <div class="tab" onclick="showTab('goals')">Goals</div>
-    <div class="tab" onclick="showTab('nutrition')">Nutrition</div>
-    <div class="tab" onclick="showTab('reference')">Reference</div>
-    <div class="tab" onclick="showTab('tasks')">Tasks</div>
-    <div class="tab" onclick="showTab('reflect')">Reflect</div>
-    <div class="tab" onclick="showTab('log')">Log</div>
-    <div class="tab" onclick="showTab('schedule')">Schedule</div>
-    <div class="tab" onclick="showTab('alcohol')">Alcohol</div>
+    <div class="nav-tabs">
+      <div class="tab" onclick="showTab('hub')">⚡ Hub</div>
+      <div class="tab active" onclick="showTab('daily')">Daily</div>
+      <div class="tab" onclick="showTab('system')">My System</div>
+      <div class="tab" onclick="showTab('goals')">Goals</div>
+      <div class="tab" onclick="showTab('nutrition')">Nutrition</div>
+      <div class="tab" onclick="showTab('reference')">Reference</div>
+      <div class="tab" onclick="showTab('tasks')">Tasks</div>
+      <div class="tab" onclick="showTab('reflect')">Reflect</div>
+      <div class="tab" onclick="showTab('log')">Log</div>
+      <div class="tab" onclick="showTab('schedule')">Schedule</div>
+      <div class="tab" onclick="showTab('alcohol')">Alcohol</div>
+    </div>
   </div>
 </nav>
 
@@ -2496,19 +2527,16 @@
   }
 
   function resetViewport() {
-    // Reset all scroll axes (iOS Safari needs explicit horizontal reset too)
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop  = 0;
-    document.body.scrollTop             = 0;
-    document.documentElement.scrollLeft = 0;
-    document.body.scrollLeft            = 0;
-    // Snap zoom back to 1× on iOS by briefly locking scale then releasing
-    var vp = document.querySelector('meta[name="viewport"]');
-    if (vp) {
-      vp.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0';
-      setTimeout(function() {
-        vp.content = 'width=device-width, initial-scale=1.0, viewport-fit=cover';
-      }, 80);
+    // iOS only — desktop needs no scroll reset or viewport manipulation
+    if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+      window.scrollTo(0, 0);
+      var vp = document.querySelector('meta[name="viewport"]');
+      if (vp) {
+        vp.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0';
+        setTimeout(function() {
+          vp.content = 'width=device-width, initial-scale=1.0, viewport-fit=cover';
+        }, 60);
+      }
     }
   }
 
@@ -2518,7 +2546,15 @@
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-' + id).classList.add('active');
     const tabEl = document.querySelector(`.tab[onclick*="'${id}'"]`);
-    if (tabEl) { tabEl.classList.add('active'); tabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); }
+    if (tabEl) {
+      tabEl.classList.add('active');
+      // Scroll only the tabs strip, not the whole page
+      const navTabs = document.querySelector('.nav-tabs');
+      if (navTabs) {
+        const target = tabEl.offsetLeft - (navTabs.offsetWidth - tabEl.offsetWidth) / 2;
+        navTabs.scrollTo({ left: target, behavior: 'smooth' });
+      }
+    }
     currentTabIdx = TAB_ORDER.indexOf(id);
     updateSideArrows();
     if (id === 'hub' && typeof renderHub === 'function') renderHub();
@@ -5416,19 +5452,8 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
   })();
 
 
-  // ── NAV SCROLL COLLAPSE ────────────────────────────────────────────────────
-  (function() {
-    var nav = document.querySelector('.nav');
-    var THRESHOLD = 60;
-    function onScroll() {
-      if (window.scrollY > THRESHOLD) {
-        nav.classList.add('nav--scrolled');
-      } else {
-        nav.classList.remove('nav--scrolled');
-      }
-    }
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll(); // run on load
-  })();
+
 
 </script>
+</body>
+</html>
