@@ -2531,27 +2531,32 @@
     }
   }
 
-  // Magic Mouse / trackpad 3-finger swipe via wheel deltaX
+  // Magic Mouse / trackpad swipe via wheel deltaX — fires immediately on threshold cross
   (function() {
-    var accumX = 0, timer = null, cooldown = false;
+    var accumX = 0, cooldown = false, idleTimer = null;
     document.addEventListener('wheel', function(e) {
-      if (cooldown) return;
       var absX = Math.abs(e.deltaX), absY = Math.abs(e.deltaY);
-      if (absX < 2 || absY > absX * 0.7) return;
+      // Must be predominantly horizontal
+      if (absX < 1 || absY > absX * 0.85) return;
+
+      // Reset accumX if swipe pauses
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(function(){ accumX = 0; }, 120);
+
+      if (cooldown) return;
       accumX += e.deltaX;
-      clearTimeout(timer);
-      timer = setTimeout(function() {
-        if (Math.abs(accumX) > 80) {
-          var dir = accumX > 0 ? 1 : -1;
-          var next = Math.max(0, Math.min(TAB_ORDER.length - 1, currentTabIdx + dir));
-          if (next !== currentTabIdx) {
-            showTab(TAB_ORDER[next], dir > 0 ? 'left' : 'right');
-            cooldown = true;
-            setTimeout(function(){ cooldown = false; }, 500);
-          }
-        }
+
+      // Fire immediately once threshold is crossed — no debounce wait
+      if (Math.abs(accumX) > 30) {
+        var dir = accumX > 0 ? 1 : -1;
+        var next = Math.max(0, Math.min(TAB_ORDER.length - 1, currentTabIdx + dir));
         accumX = 0;
-      }, 80);
+        if (next !== currentTabIdx) {
+          showTab(TAB_ORDER[next], dir > 0 ? 'left' : 'right');
+          cooldown = true;
+          setTimeout(function(){ cooldown = false; }, 320);
+        }
+      }
     }, { passive: true });
   })();
 
