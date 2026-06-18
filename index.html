@@ -2200,10 +2200,13 @@
     updateScore();
     try { localStorage.removeItem('lifeos_habits'); } catch(e) {}
     writeHabitsToFile({}, '');
+    // Record reset date in ET so nightly auto-reset doesn't double-fire
+    try { localStorage.setItem(LAST_RESET_KEY, getETDateStr()); } catch(e) {}
   }
 
   // ── DAILY HABIT LOG ────────────────────────────────────────────────────
   const HLOG_KEY = 'lifeos_hlog';
+  const LAST_RESET_KEY = 'lifeos_last_reset';
   const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -2238,6 +2241,103 @@
     if (filtered.length > 365) filtered.length = 365;
     saveHlog(filtered);
     renderHlog();
+  }
+
+  // ── NIGHTLY AUTO-RESET (2am ET) ──────────────────────────────────────────
+  function getETDateStr() {
+    // Returns current Eastern Time date as "YYYY-MM-DD"
+    try {
+      return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
+    } catch(e) {
+      const d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    }
+  }
+
+  function getETHour() {
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York', hour: 'numeric', hour12: false
+      }).formatToParts(new Date());
+      return parseInt(parts.find(function(p){ return p.type==='hour'; }).value, 10);
+    } catch(e) { return new Date().getHours(); }
+  }
+
+  function msUntilNext2amET() {
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York',
+        hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false
+      }).formatToParts(new Date());
+      const get = function(t){ return parseInt(parts.find(function(p){ return p.type===t; }).value, 10); };
+      const elapsedSec = get('hour') * 3600 + get('minute') * 60 + get('second');
+      const targetSec  = 2 * 3600; // 2:00am
+      const diffSec    = elapsedSec < targetSec
+        ? targetSec - elapsedSec
+        : (24 * 3600) - elapsedSec + targetSec;
+      return diffSec * 1000;
+    } catch(e) {
+      // Fallback: ~next midnight local + 2hr
+      return 4 * 60 * 60 * 1000;
+    }
+  }
+
+  function showResetToast(auto) {
+    var msg = auto
+      ? '🌙 Nightly reset — yesterday\'s habits logged!'
+      : '✅ Habits logged & reset for tomorrow';
+    var toast = document.createElement('div');
+    toast.textContent = msg;
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);' +
+      'background:rgba(99,102,241,0.92);color:#fff;padding:12px 22px;border-radius:12px;' +
+      'font-size:14px;font-weight:500;z-index:999999;box-shadow:0 4px 20px rgba(0,0,0,0.3);' +
+      'backdrop-filter:blur(8px);pointer-events:none;opacity:0;transition:opacity 0.3s ease;';
+    document.body.appendChild(toast);
+    requestAnimationFrame(function(){ toast.style.opacity='1'; });
+    setTimeout(function(){
+      toast.style.opacity='0';
+      setTimeout(function(){ toast.remove(); }, 400);
+    }, 3500);
+  }
+
+  function scheduleNightlyReset() {
+    // On page load: fire missed reset if it's past 2am ET and we haven't reset today
+    var lastReset = '';
+    try { lastReset = localStorage.getItem(LAST_RESET_KEY) || ''; } catch(e) {}
+    var todayET  = getETDateStr();
+    var hourET   = getETHour();
+
+    if (hourET >= 2 && lastReset !== todayET) {
+      // Auto-reset after a short delay so the UI is fully rendered
+      setTimeout(function() {
+        if (getTotal() > 0) {
+          resetAll();
+          showResetToast(true);
+        } else {
+          // Nothing to log yet, just mark the date
+          try { localStorage.setItem(LAST_RESET_KEY, getETDateStr()); } catch(e) {}
+        }
+      }, 1200);
+    }
+
+    // Schedule the recurring 2am ET trigger
+    (function tick() {
+      var ms = msUntilNext2amET();
+      setTimeout(function() {
+        var last = '';
+        try { last = localStorage.getItem(LAST_RESET_KEY) || ''; } catch(e) {}
+        var today = getETDateStr();
+        if (last !== today) {
+          if (getTotal() > 0) {
+            resetAll();
+            showResetToast(true);
+          } else {
+            try { localStorage.setItem(LAST_RESET_KEY, today); } catch(e) {}
+          }
+        }
+        tick(); // re-arm for the next night
+      }, ms);
+    })();
   }
 
   function renderHlog() {
@@ -2532,8 +2632,9 @@
   updateSideArrows(); // init side arrow visibility
   loadHabits();    // restore habit checkboxes (from file or localStorage)
   initFileAccess(); // reconnect File System API handle if previously granted
-  renderHlog();       // render daily habit log on load
-  renderHabitChart(); // render streak chart on load
+  renderHlog();          // render daily habit log on load
+  renderHabitChart();    // render streak chart on load
+  scheduleNightlyReset(); // auto-reset habits at 2am ET every night
 
   // ── TASKS (GitHub Gist sync) ────────────────────────
   let tasks = [];
