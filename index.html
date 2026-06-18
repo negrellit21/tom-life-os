@@ -2531,22 +2531,14 @@
     }
   }
 
-  // Magic Mouse / trackpad swipe via wheel deltaX — fires immediately on threshold cross
+  // Magic Mouse / trackpad swipe via wheel deltaX
   (function() {
-    var accumX = 0, cooldown = false, idleTimer = null;
+    var accumX = 0, cooldown = false;
     document.addEventListener('wheel', function(e) {
       var absX = Math.abs(e.deltaX), absY = Math.abs(e.deltaY);
-      // Must be predominantly horizontal
       if (absX < 1 || absY > absX * 0.85) return;
-
-      // Reset accumX if swipe pauses
-      clearTimeout(idleTimer);
-      idleTimer = setTimeout(function(){ accumX = 0; }, 120);
-
       if (cooldown) return;
       accumX += e.deltaX;
-
-      // Fire immediately once threshold is crossed — no debounce wait
       if (Math.abs(accumX) > 50) {
         var dir = accumX > 0 ? 1 : -1;
         var next = Math.max(0, Math.min(TAB_ORDER.length - 1, currentTabIdx + dir));
@@ -2554,7 +2546,8 @@
         if (next !== currentTabIdx) {
           showTab(TAB_ORDER[next], dir > 0 ? 'left' : 'right');
           cooldown = true;
-          setTimeout(function(){ cooldown = false; }, 480);
+          // 800ms outlasts trackpad momentum/inertia scroll events
+          setTimeout(function(){ cooldown = false; accumX = 0; }, 800);
         }
       }
     }, { passive: true });
