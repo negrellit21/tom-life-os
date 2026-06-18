@@ -2547,14 +2547,14 @@
       accumX += e.deltaX;
 
       // Fire immediately once threshold is crossed — no debounce wait
-      if (Math.abs(accumX) > 30) {
+      if (Math.abs(accumX) > 50) {
         var dir = accumX > 0 ? 1 : -1;
         var next = Math.max(0, Math.min(TAB_ORDER.length - 1, currentTabIdx + dir));
         accumX = 0;
         if (next !== currentTabIdx) {
           showTab(TAB_ORDER[next], dir > 0 ? 'left' : 'right');
           cooldown = true;
-          setTimeout(function(){ cooldown = false; }, 320);
+          setTimeout(function(){ cooldown = false; }, 480);
         }
       }
     }, { passive: true });
