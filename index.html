@@ -37,7 +37,7 @@
   .tab:hover { color: var(--text); }
   .tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
   /* LAYOUT */
-  .page { display: none; max-width: 900px; margin: 0 auto; padding: 28px 20px 60px; }
+  .page { display: none; max-width: 900px; margin: 0 auto; padding: 76px 20px 60px; }
   .page.active { display: block; }
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
@@ -922,6 +922,8 @@
 <body>
 
 <!-- Side navigation arrows -->
+</div>
+
 <div id="arrow-left" class="side-arrow hidden" onclick="navArrow(-1)" title="Previous tab">
   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M15 18l-6-6 6-6" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -4745,11 +4747,112 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
 .hub-wkbar-fill.weekend { background: linear-gradient(180deg, #f59e0b, #f97316); }
 .hub-wkbar-lbl { font-size: 9px; color: var(--text3); font-weight: 600; }
 .hub-wkbar-pct { font-size: 9px; color: var(--text2); font-weight: 700; min-height: 13px; }
+
+
+  /* ── HUB LIVE CLOCK ──────────────────────────────────────────────────── */
+  .hub-clock-card {
+    border-radius: 20px;
+    padding: 28px 24px 22px;
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.85);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    display: flex; align-items: center; gap: 32px;
+    margin-bottom: 20px;
+  }
+  .hub-clock-ring-wrap {
+    position: relative; flex-shrink: 0;
+    width: 140px; height: 140px;
+  }
+  .hub-clock-svg { width: 140px; height: 140px; transform: rotate(-90deg); }
+  .hub-clock-track {
+    fill: none; stroke: rgba(99,102,241,0.12); stroke-width: 8;
+    stroke-dasharray: 4 6; stroke-linecap: round;
+  }
+  .hub-clock-arc {
+    fill: none; stroke: url(#clockGrad); stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1);
+  }
+  .hub-clock-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .hub-clock-time {
+    font-size: 26px; font-weight: 700; color: var(--text1);
+    letter-spacing: -0.5px; line-height: 1;
+  }
+  .hub-clock-ampm {
+    font-size: 11px; font-weight: 600; color: var(--text3);
+    letter-spacing: 0.08em; margin-top: 3px;
+  }
+  .hub-clock-info { flex: 1; }
+  .hub-clock-date {
+    font-size: 18px; font-weight: 700; color: var(--text1);
+    margin-bottom: 4px;
+  }
+  .hub-clock-dow {
+    font-size: 12px; font-weight: 600; color: #6366f1;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .hub-clock-secs-bar-wrap {
+    height: 4px; border-radius: 4px;
+    background: rgba(99,102,241,0.12);
+    overflow: hidden; max-width: 180px;
+  }
+  .hub-clock-secs-bar {
+    height: 100%; border-radius: 4px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    transition: width 0.25s linear;
+  }
+  .hub-clock-secs-label {
+    font-size: 10px; color: var(--text3); margin-top: 5px;
+    letter-spacing: 0.05em;
+  }
+  @media (max-width: 600px) {
+    .hub-clock-card { flex-direction: column; align-items: center; gap: 16px; padding: 22px 16px 18px; }
+    .hub-clock-info { text-align: center; }
+    .hub-clock-secs-bar-wrap { margin: 0 auto; }
+  }
 </style>
 
 <div class="page" id="tab-hub">
   <div class="section-header">
     <div><h1>Hub</h1><p id="hub-greeting">Your command center — live insights from across your OS.</p></div>
+  </div>
+
+  <!-- Live Clock -->
+  <div class="hub-clock-card">
+    <div class="hub-clock-ring-wrap">
+      <svg class="hub-clock-svg" viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="clockGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stop-color="#6366f1"/>
+            <stop offset="100%" stop-color="#8b5cf6"/>
+          </linearGradient>
+        </defs>
+        <!-- dotted track -->
+        <circle class="hub-clock-track" cx="70" cy="70" r="58"/>
+        <!-- minute arc -->
+        <circle class="hub-clock-arc" id="clock-arc" cx="70" cy="70" r="58"
+                stroke-dasharray="0 365" stroke-dashoffset="0"/>
+      </svg>
+      <div class="hub-clock-center">
+        <div class="hub-clock-time" id="hub-clock-time">--:--</div>
+        <div class="hub-clock-ampm" id="hub-clock-ampm">--</div>
+      </div>
+    </div>
+    <div class="hub-clock-info">
+      <div class="hub-clock-date" id="hub-clock-date">—</div>
+      <div class="hub-clock-dow"  id="hub-clock-dow">—</div>
+      <div class="hub-clock-secs-bar-wrap">
+        <div class="hub-clock-secs-bar" id="hub-clock-secs-bar" style="width:0%"></div>
+      </div>
+      <div class="hub-clock-secs-label" id="hub-clock-secs-label">:00</div>
+    </div>
   </div>
 
   <!-- Stat cards -->
@@ -5265,4 +5368,67 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
       }
     }
   }
+
+
+  // ── HUB LIVE CLOCK ────────────────────────────────────────────────────────
+  (function() {
+    var DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var circumference = 2 * Math.PI * 58; // r=58
+
+    function tickClock() {
+      var now   = new Date();
+      var h     = now.getHours();
+      var m     = now.getMinutes();
+      var s     = now.getSeconds();
+      var ampm  = h >= 12 ? 'PM' : 'AM';
+      var h12   = h % 12 || 12;
+      var mm    = String(m).padStart(2,'0');
+
+      // Time display
+      var timeEl = document.getElementById('hub-clock-time');
+      var ampmEl = document.getElementById('hub-clock-ampm');
+      if (timeEl) timeEl.textContent = h12 + ':' + mm;
+      if (ampmEl) ampmEl.textContent = ampm;
+
+      // Date + day
+      var dateEl = document.getElementById('hub-clock-date');
+      var dowEl  = document.getElementById('hub-clock-dow');
+      if (dateEl) dateEl.textContent = MONTHS[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+      if (dowEl)  dowEl.textContent  = DAYS[now.getDay()];
+
+      // Arc: minute progress (0–60 min → 0–circumference)
+      var arc     = document.getElementById('clock-arc');
+      var minFrac = (m * 60 + s) / 3600;
+      var dash    = (minFrac * circumference).toFixed(2);
+      var gap     = (circumference - parseFloat(dash)).toFixed(2);
+      if (arc) arc.setAttribute('stroke-dasharray', dash + ' ' + gap);
+
+      // Seconds bar
+      var bar   = document.getElementById('hub-clock-secs-bar');
+      var label = document.getElementById('hub-clock-secs-label');
+      if (bar)   bar.style.width = ((s / 59) * 100).toFixed(1) + '%';
+      if (label) label.textContent = ':' + String(s).padStart(2,'0');
+    }
+
+    tickClock();
+    setInterval(tickClock, 1000);
+  })();
+
+
+  // ── NAV SCROLL COLLAPSE ────────────────────────────────────────────────────
+  (function() {
+    var nav = document.querySelector('.nav');
+    var THRESHOLD = 60;
+    function onScroll() {
+      if (window.scrollY > THRESHOLD) {
+        nav.classList.add('nav--scrolled');
+      } else {
+        nav.classList.remove('nav--scrolled');
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll(); // run on load
+  })();
+
 </script>
