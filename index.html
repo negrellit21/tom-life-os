@@ -65,7 +65,7 @@
   .nav-brand span { color: var(--text3); font-weight: 400; }
   .nav-logo {
     width: 26px; height: 26px; flex-shrink: 0;
-    border-radius: 7px; background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 7px; background: linear-gradient(135deg, #6366f1, #7c3aed);
     display: flex; align-items: center; justify-content: center;
   }
   .nav-logo svg { width: 15px; height: 15px; }
@@ -75,7 +75,7 @@
     white-space: nowrap; border-radius: 30px; flex-shrink: 0;
     transition: color 0.15s, background 0.2s;
   }
-  .tab:hover { color: var(--text1); background: rgba(99,102,241,0.07); }
+  .tab:hover { color: #f0ede0; background: rgba(99,102,241,0.10); }
   .tab.active { color: #6366f1; font-weight: 600; background: rgba(99,102,241,0.10); }
   /* LAYOUT */
   .page { display: none; max-width: 900px; margin: 0 auto; padding: 82px 20px 60px; }
@@ -410,9 +410,31 @@
   .filter-btn:hover:not(.active) { background: var(--surface2); }
   .priority-select { padding: 9px 10px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; font-family: inherit; color: var(--text2); background: var(--surface); cursor: pointer; outline: none; flex-shrink: 0; }
   .priority-select:focus { border-color: var(--blue); }
-  .p-high { background: var(--red-bg); color: var(--red-dark); }
-  .p-med { background: var(--amber-bg); color: var(--amber-dark); }
-  .p-low { background: var(--blue-bg); color: var(--blue-dark); }
+  /* priority tags — muted, modern */
+  .p-high { background: rgba(200,100,100,0.10); color: #b06060; }
+  .p-med  { background: rgba(190,150,60,0.10);  color: #9a8040; }
+  .p-low  { background: rgba(80,120,200,0.10);  color: #6080b0; }
+
+  /* status dropdown on task rows */
+  .task-status-select {
+    font-size: 11px; font-weight: 600; font-family: inherit;
+    border: none; outline: none; cursor: pointer;
+    border-radius: 20px; padding: 3px 9px;
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23999'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 7px center;
+    padding-right: 20px;
+    transition: background 0.2s, color 0.2s;
+  }
+  .task-status-select.status-not-started {
+    background-color: rgba(210,90,90,0.10);
+    color: #b05858;
+  }
+  .task-status-select.status-in-progress {
+    background-color: rgba(70,120,210,0.11);
+    color: #4a78c8;
+  }
   /* ── DAILY LOG TAB ──────────────────────────────────── */
   .log-stars { display:flex; gap:6px; margin-bottom:4px; }
   .log-star { font-size:26px; cursor:pointer; color:#ddd; transition:color 0.1s; line-height:1; user-select:none; }
@@ -493,7 +515,7 @@
   /* ── NAV — frosted glass ───────────────────────────────────────────── */
   .nav { background: transparent !important; border-bottom: none !important; box-shadow: none !important; }
   .nav-logo {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, #6366f1, #7c3aed);
     box-shadow: 0 2px 8px rgba(99,102,241,0.35);
     transition: box-shadow 0.2s, transform 0.2s !important;
   }
@@ -579,7 +601,7 @@
   button:active { transform: translateY(0) scale(0.98); }
 
   .reflect-save-btn {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+    background: linear-gradient(135deg, #6366f1, #7c3aed) !important;
     color: white !important;
     border: none !important;
     padding: 11px 22px !important;
@@ -2753,7 +2775,7 @@
     const name = input.value.trim();
     if (!name) return;
     const priority = document.getElementById('task-priority').value;
-    tasks.unshift({ id: Date.now(), name, added: Date.now(), done: false, priority });
+    tasks.unshift({ id: Date.now(), name, added: Date.now(), done: false, priority, status: 'not_started' });
     saveTasks();
     input.value = '';
     renderTasks();
@@ -2762,6 +2784,16 @@
   function toggleTask(id) {
     const t = tasks.find(t => t.id === id);
     if (t) { t.done = !t.done; saveTasks(); renderTasks(); }
+  }
+
+  function changeTaskStatus(id, val) {
+    const t = tasks.find(t => t.id === id);
+    if (t) { t.status = val; saveTasks(); }
+    // Just update the select styling in-place — no full re-render
+    const sel = document.querySelector('#task-' + id + ' .task-status-select');
+    if (sel) {
+      sel.className = 'task-status-select status-' + val.replace('_','-');
+    }
   }
 
   function deleteTask(id) {
@@ -2854,12 +2886,19 @@
     const checkClass = t.done ? ' done' : '';
     const prio = t.priority || 'med';
     const prioTag = t.done ? '' : '<span class="tag ' + PRIORITY_CLASS[prio] + '" style="font-size:10px; padding:2px 7px; flex-shrink:0; margin-top:1px;">' + PRIORITY_LABEL[prio] + '</span>';
+    const status = t.status || 'not_started';
+    const statusCls = 'status-' + status.replace('_','-');
+    const statusSelect = t.done ? '' :
+      '<select class="task-status-select ' + statusCls + '" onchange="changeTaskStatus(' + t.id + ', this.value)">' +
+        '<option value="not_started"' + (status==='not_started'?' selected':'') + '>● Not Started</option>' +
+        '<option value="in_progress"' + (status==='in_progress'?' selected':'') + '>◐ In Progress</option>' +
+      '</select>';
     return '<div class="task-row" id="task-' + t.id + '">' +
       '<div class="task-check' + checkClass + '" onclick="toggleTask(' + t.id + ')"></div>' +
       '<div class="task-body">' +
-        '<div style="display:flex; align-items:flex-start; gap:8px;">' +
-          '<div class="task-name' + doneClass + '" style="flex:1;">' + escHTML(t.name) + '</div>' +
-          prioTag +
+        '<div style="display:flex; align-items:flex-start; gap:8px; flex-wrap:wrap;">' +
+          '<div class="task-name' + doneClass + '" style="flex:1; min-width:0;">' + escHTML(t.name) + '</div>' +
+          '<div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">' + prioTag + statusSelect + '</div>' +
         '</div>' +
         '<div class="task-meta">Added ' + fmtDate(t.added) + (t.done ? ' · ✓ Done' : '') + '</div>' +
       '</div>' +
@@ -5167,7 +5206,7 @@ Keep each section tight. No padding. No "Great job!" filler. Be real.`;
     const tlEl = document.getElementById('hub-task-list');
     const ocEl = document.getElementById('hub-open-count');
     if (ocEl) ocEl.textContent = openTasks.length ? '(' + openTasks.length + ' open)' : '';
-    const PCOLS = { high: '#ef4444', med: '#f59e0b', low: '#6366f1' };
+    const PCOLS = { high: '#c07070', med: '#a08840', low: '#6080b0' };
     const PLBL  = { high: '🔴 High', med: '🟡 Med', low: '🔵 Low' };
     if (tlEl) {
       const sorted = [...openTasks].sort((a,b) => ({ high:0, med:1, low:2 }[a.priority]||1) - ({ high:0, med:1, low:2 }[b.priority]||1));
